@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", function() {
     canvas.width = 800;
     canvas.height = 400;
 
-    ctx.fillStyle = "blue";
-    ctx.fillRect(50, 50, 50, 50); // Dibuja un cuadrado de prueba
+    let milei = new Image();
+    milei.src = "milei.png"; // Asegúrate de que el nombre coincida con la imagen que subiste
+
+    milei.onload = function() {
+        ctx.drawImage(milei, 50, 50, 64, 64); // Dibuja la imagen en la pantalla
+    };
 });
