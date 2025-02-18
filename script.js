@@ -2,7 +2,8 @@
 const config = {
     niveles: 3,
     velocidadAgentes: 1.5,
-    radioDeteccion: 150
+    radioDeteccion: 150,
+    tamañoCanvas: { ancho: 800, alto: 500 }
 };
 
 // Estado del Juego
@@ -10,8 +11,8 @@ let juego = {
     nivel: 1,
     apoyo: 100,
     pistasFBI: 0,
-    posX: 50,
-    posY: 50,
+    posX: 400,
+    posY: 250,
     agentes: [],
     objetos: [],
     activo: false
@@ -22,12 +23,18 @@ const DOM = {
     inicio: document.getElementById('pantalla-inicio'),
     juego: document.getElementById('juego'),
     fin: document.getElementById('pantalla-fin'),
-    milei: document.getElementById('milei'),
     nivel: document.getElementById('nivel'),
     apoyo: document.getElementById('apoyo'),
     pistas: document.getElementById('pistas'),
-    resultado: document.getElementById('resultado')
+    resultado: document.getElementById('resultado'),
+    canvas: document.getElementById('game-canvas'),
+    ctx: null
 };
+
+// Inicializar Canvas
+DOM.ctx = DOM.canvas.getContext('2d');
+DOM.canvas.width = config.tamañoCanvas.ancho;
+DOM.canvas.height = config.tamañoCanvas.alto;
 
 // Sistema de Sonido
 const sonidos = {
@@ -43,101 +50,113 @@ function iniciarJuego() {
     juego.activo = true;
     cargarNivel(juego.nivel);
     actualizarUI();
+    loopJuego();
 }
 
 function cargarNivel(nivel) {
+    // Limpiar nivel anterior
+    juego.agentes = [];
+    juego.objetos = [];
+
     // Crear agentes
     for (let i = 0; i < nivel + 1; i++) {
-        const agente = document.createElement('img');
-        agente.src = 'img/fbi.png';
-        agente.className = 'agente-fbi';
-        agente.style.left = Math.random() * 700 + 'px';
-        agente.style.top = Math.random() * 400 + 'px';
-        DOM.gameContainer.appendChild(agente);
-        juego.agentes.push(agente);
+        juego.agentes.push({
+            x: Math.random() * DOM.canvas.width,
+            y: Math.random() * DOM.canvas.height,
+            velocidad: config.velocidadAgentes
+        });
     }
-    
+
     // Crear objetos
     const tipos = ['moneda', 'documento', 'trampa'];
     for (let i = 0; i < nivel * 3; i++) {
-        const objeto = document.createElement('img');
-        objeto.src = `img/${tipos[i % 3]}.png`;
-        objeto.className = 'objeto';
-        objeto.style.left = Math.random() * 750 + 'px';
-        objeto.style.top = Math.random() * 450 + 'px';
-        objeto.onclick = () => recolectarObjeto(objeto);
-        DOM.gameContainer.appendChild(objeto);
-        juego.objetos.push(objeto);
+        juego.objetos.push({
+            x: Math.random() * DOM.canvas.width,
+            y: Math.random() * DOM.canvas.height,
+            tipo: tipos[i % 3]
+        });
     }
 }
 
-function mover(direccion) {
+function loopJuego() {
     if (!juego.activo) return;
-    
-    const paso = 20;
-    switch(direccion) {
-        case 'up': juego.posY = Math.max(0, juego.posY - paso); break;
-        case 'down': juego.posY = Math.min(440, juego.posY + paso); break;
-        case 'left': juego.posX = Math.max(0, juego.posX - paso); break;
-        case 'right': juego.posX = Math.min(740, juego.posX + paso); break;
-    }
-    
-    DOM.milei.style.left = juego.posX + 'px';
-    DOM.milei.style.top = juego.posY + 'px';
-    sonidos.movimiento.play();
-    verificarColisiones();
+
+    // Limpiar canvas
+    DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
+
+    // Dibujar Milei
+    DOM.ctx.drawImage(cargarImagen('milei'), juego.posX, juego.posY, 60, 60);
+
+    // Dibujar agentes
+    juego.agentes.forEach(agente => {
+        DOM.ctx.drawImage(cargarImagen('fbi'), agente.x, agente.y, 50, 50);
+        moverAgente(agente);
+        verificarColision(agente);
+    });
+
+    // Dibujar objetos
+    juego.objetos.forEach(objeto => {
+        DOM.ctx.drawImage(cargarImagen(objeto.tipo), objeto.x, objeto.y, 35, 35);
+    });
+
+    // Siguiente frame
+    requestAnimationFrame(loopJuego);
 }
 
-function verificarColisiones() {
-    // Colisión con agentes
-    juego.agentes.forEach(agente => {
-        const rectAgente = agente.getBoundingClientRect();
-        const rectMilei = DOM.milei.getBoundingClientRect();
-        
-        if (rectAgente.left < rectMilei.right && 
-            rectAgente.right > rectMilei.left && 
-            rectAgente.top < rectMilei.bottom && 
-            rectAgente.bottom > rectMilei.top) {
-            manejarColisionAgente();
-        }
-    });
+function moverAgente(agente) {
+    const dx = juego.posX - agente.x;
+    const dy = juego.posY - agente.y;
+    const distancia = Math.sqrt(dx * dx + dy * dy);
+
+    if (distancia < config.radioDeteccion) {
+        const angulo = Math.atan2(dy, dx);
+        agente.x += Math.cos(angulo) * agente.velocidad;
+        agente.y += Math.sin(angulo) * agente.velocidad;
+    } else {
+        agente.x += (Math.random() - 0.5) * 2;
+        agente.y += (Math.random() - 0.5) * 2;
+    }
+
+    // Mantener dentro del canvas
+    agente.x = Math.max(0, Math.min(DOM.canvas.width - 50, agente.x));
+    agente.y = Math.max(0, Math.min(DOM.canvas.height - 50, agente.y));
+}
+
+function verificarColision(agente) {
+    const distancia = Math.sqrt((juego.posX - agente.x) ** 2 + (juego.posY - agente.y) ** 2);
+    if (distancia < 50) {
+        manejarColisionAgente();
+    }
 }
 
 function manejarColisionAgente() {
     juego.pistasFBI += 2;
     sonidos.alerta.play();
     actualizarUI();
-    
+
     if (juego.pistasFBI >= 10) {
         terminarJuego(false);
     }
 }
 
-function recolectarObjeto(objeto) {
-    const tipo = objeto.src.split('/').pop().replace('.png', '');
-    
-    switch(tipo) {
-        case 'moneda':
-            juego.apoyo = Math.min(100, juego.apoyo + 15);
-            sonidos.moneda.play();
-            break;
-        case 'documento':
-            juego.pistasFBI = Math.max(0, juego.pistasFBI - 1);
-            break;
-        case 'trampa':
-            juego.apoyo = Math.max(0, juego.apoyo - 20);
-            break;
+function mover(direccion) {
+    if (!juego.activo) return;
+
+    const paso = 20;
+    switch(direccion) {
+        case 'up': juego.posY = Math.max(0, juego.posY - paso); break;
+        case 'down': juego.posY = Math.min(DOM.canvas.height - 60, juego.posY + paso); break;
+        case 'left': juego.posX = Math.max(0, juego.posX - paso); break;
+        case 'right': juego.posX = Math.min(DOM.canvas.width - 60, juego.posX + paso); break;
     }
-    
-    objeto.remove();
-    actualizarUI();
+    sonidos.movimiento.play();
 }
 
 function actualizarUI() {
     DOM.nivel.textContent = juego.nivel;
     DOM.apoyo.textContent = juego.apoyo;
     DOM.pistas.textContent = juego.pistasFBI;
-    
+
     if (juego.apoyo <= 0) terminarJuego(false);
 }
 
@@ -150,4 +169,11 @@ function terminarJuego(victoria) {
 
 function reiniciar() {
     location.reload();
+}
+
+// Cargar imágenes
+function cargarImagen(nombre) {
+    const img = new Image();
+    img.src = `img/${nombre}.png`;
+    return img;
 }
