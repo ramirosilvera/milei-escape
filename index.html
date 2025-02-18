@@ -4,51 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milei Escape: La Gran Evasión</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        #gameCanvas {
-            border: 1px solid black;
-            background-color: #fff;
-        }
-        /* Estilo para los botones de movimiento */
-        #buttons {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 20px 30px;
-            font-size: 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 70px;
-            height: 70px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .btn:active {
-            background-color: #003f7f;
-        }
-        #leftBtn, #rightBtn {
-            width: 70px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css"> <!-- Vincula el archivo CSS -->
 </head>
 <body>
     <canvas id="gameCanvas" width="500" height="500"></canvas>
@@ -63,6 +19,6 @@
         <button id="downBtn" class="btn">⬇️</button>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js"></script> <!-- Vincula el archivo JS -->
 </body>
 </html>
