@@ -10,36 +10,48 @@ let mileiX = 50;
 let mileiY = 50;
 const velocidad = 5; // Velocidad de movimiento
 
+// Tamaño de la imagen de Milei
+const mileiWidth = 50;
+const mileiHeight = 50;
+
 // Dibujar el personaje en el canvas
 milei.onload = function () {
-    ctx.drawImage(milei, mileiX, mileiY, 50, 50);
+    ctx.drawImage(milei, mileiX, mileiY, mileiWidth, mileiHeight);
 };
 
 // Funciones para mover a Milei
 function moverIzquierda() {
-    mileiX -= velocidad;
-    actualizarPosicion();
+    if (mileiX > 0) {
+        mileiX -= velocidad;
+        actualizarPosicion();
+    }
 }
 
 function moverDerecha() {
-    mileiX += velocidad;
-    actualizarPosicion();
+    if (mileiX < canvas.width - mileiWidth) {
+        mileiX += velocidad;
+        actualizarPosicion();
+    }
 }
 
 function moverArriba() {
-    mileiY -= velocidad;
-    actualizarPosicion();
+    if (mileiY > 0) {
+        mileiY -= velocidad;
+        actualizarPosicion();
+    }
 }
 
 function moverAbajo() {
-    mileiY += velocidad;
-    actualizarPosicion();
+    if (mileiY < canvas.height - mileiHeight) {
+        mileiY += velocidad;
+        actualizarPosicion();
+    }
 }
 
 // Función para actualizar la posición
 function actualizarPosicion() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
-    ctx.drawImage(milei, mileiX, mileiY, 50, 50); // Volver a dibujar a Milei en la nueva posición
+    ctx.drawImage(milei, mileiX, mileiY, mileiWidth, mileiHeight); // Volver a dibujar a Milei en la nueva posición
 }
 
 // Asignar eventos a los botones
