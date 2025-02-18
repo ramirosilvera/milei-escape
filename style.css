@@ -1,11 +1,16 @@
 /* Estilos Base */
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
     font-family: 'Arial', sans-serif;
     background: #1a1a1a;
     color: white;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
 }
 
 #pantalla-inicio, #pantalla-fin {
@@ -16,44 +21,20 @@ body {
     background: rgba(0,0,0,0.9);
     padding: 2rem;
     border-radius: 10px;
+    text-align: center;
 }
 
 #juego {
     display: none;
 }
 
-/* Contenedor del Juego */
-#game-container {
+/* Canvas */
+#game-canvas {
     width: 800px;
     height: 500px;
-    margin: 20px auto;
-    position: relative;
     background: url('img/fondo.jpg') no-repeat center/cover;
     border: 3px solid #34495e;
-    overflow: hidden;
-}
-
-/* Personajes y Objetos */
-#milei {
-    width: 60px;
-    height: 60px;
-    position: absolute;
-    transition: 0.15s;
-    cursor: pointer;
-}
-
-.agente-fbi {
-    width: 50px;
-    height: 50px;
-    position: absolute;
-    transition: 0.3s;
-}
-
-.objeto {
-    width: 35px;
-    height: 35px;
-    position: absolute;
-    animation: brillo 1.5s infinite;
+    margin: 20px auto;
 }
 
 /* Controles */
@@ -75,16 +56,13 @@ button {
     transition: 0.3s;
 }
 
-/* Animaciones */
-@keyframes brillo {
-    0% { filter: drop-shadow(0 0 5px gold); }
-    50% { filter: drop-shadow(0 0 15px gold); }
-    100% { filter: drop-shadow(0 0 5px gold); }
+button:hover {
+    background: #2980b9;
 }
 
 /* Responsive */
 @media (max-width: 800px) {
-    #game-container {
+    #game-canvas {
         width: 95vw;
         height: 60vh;
     }
