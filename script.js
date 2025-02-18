@@ -1,195 +1,125 @@
 // Configuración del Juego
 const config = {
-    niveles: [
-        { agentes: 2, objetos: 5, tiempo: 60 },
-        { agentes: 3, objetos: 7, tiempo: 45 },
-        { agentes: 4, objetos: 10, tiempo: 30 }
-    ],
-    velocidadAgentes: 1000,
-    radioDeteccion: 150,
-    tamañoMapa: { ancho: 800, alto: 500 }
+    niveles: 3,
+    velocidadAgentes: 1.5,
+    radioDeteccion: 150
 };
 
 // Estado del Juego
 let juego = {
-    nivelActual: 0,
+    nivel: 1,
     apoyo: 100,
     pistasFBI: 0,
-    posicionMilei: { x: 50, y: 50 },
+    posX: 50,
+    posY: 50,
     agentes: [],
     objetos: [],
-    intervalos: [],
     activo: false
 };
 
-// Elementos del DOM
-const elementos = {
-    apoyo: document.getElementById('apoyo-popular'),
-    pistas: document.getElementById('pistas-fbi'),
-    nivel: document.getElementById('nivel-actual'),
-    barraProgreso: document.getElementById('progreso-fbi'),
-    contenedorJuego: document.getElementById('game-container'),
+// Elementos DOM
+const DOM = {
+    inicio: document.getElementById('pantalla-inicio'),
+    juego: document.getElementById('juego'),
+    fin: document.getElementById('pantalla-fin'),
     milei: document.getElementById('milei'),
-    pantallaInicio: document.getElementById('pantalla-inicio'),
-    pantallaJuego: document.getElementById('juego'),
-    pantallaFin: document.getElementById('pantalla-fin')
+    nivel: document.getElementById('nivel'),
+    apoyo: document.getElementById('apoyo'),
+    pistas: document.getElementById('pistas'),
+    resultado: document.getElementById('resultado')
 };
 
-// Sonidos
+// Sistema de Sonido
 const sonidos = {
-    recolectar: new Audio('sounds/coin.wav'),
+    movimiento: new Audio('sounds/click.wav'),
     alerta: new Audio('sounds/sirena.wav'),
-    movimiento: new Audio('sounds/click.wav')
+    moneda: new Audio('sounds/coin.wav')
 };
 
-// Funciones principales
+// Funciones Principales
 function iniciarJuego() {
-    elementos.pantallaInicio.classList.add('oculto');
-    elementos.pantallaJuego.classList.remove('oculto');
+    DOM.inicio.style.display = 'none';
+    DOM.juego.style.display = 'block';
     juego.activo = true;
-    cargarNivel(config.niveles[juego.nivelActual]);
-    iniciarLoopJuego();
+    cargarNivel(juego.nivel);
+    actualizarUI();
 }
 
 function cargarNivel(nivel) {
-    // Reiniciar estado
-    juego.agentes.forEach(agente => agente.remove());
-    juego.objetos.forEach(objeto => objeto.remove());
-    juego.agentes = [];
-    juego.objetos = [];
-
-    // Configurar nuevo nivel
-    elementos.nivel.textContent = juego.nivelActual + 1;
-    crearAgentes(nivel.agentes);
-    crearObjetos(nivel.objetos);
-    posicionarElemento(elementos.milei, juego.posicionMilei);
-}
-
-function crearAgentes(cantidad) {
-    for (let i = 0; i < cantidad; i++) {
+    // Crear agentes
+    for (let i = 0; i < nivel + 1; i++) {
         const agente = document.createElement('img');
         agente.src = 'img/fbi.png';
         agente.className = 'agente-fbi';
-        posicionarElemento(agente);
+        agente.style.left = Math.random() * 700 + 'px';
+        agente.style.top = Math.random() * 400 + 'px';
+        DOM.gameContainer.appendChild(agente);
         juego.agentes.push(agente);
-        elementos.contenedorJuego.appendChild(agente);
     }
-}
-
-function crearObjetos(cantidad) {
+    
+    // Crear objetos
     const tipos = ['moneda', 'documento', 'trampa'];
-    for (let i = 0; i < cantidad; i++) {
+    for (let i = 0; i < nivel * 3; i++) {
         const objeto = document.createElement('img');
-        const tipo = tipos[Math.floor(Math.random() * tipos.length)];
-        objeto.src = `img/${tipo}.png`;
+        objeto.src = `img/${tipos[i % 3]}.png`;
         objeto.className = 'objeto';
-        objeto.dataset.tipo = tipo;
-        posicionarElemento(objeto);
+        objeto.style.left = Math.random() * 750 + 'px';
+        objeto.style.top = Math.random() * 450 + 'px';
+        objeto.onclick = () => recolectarObjeto(objeto);
+        DOM.gameContainer.appendChild(objeto);
         juego.objetos.push(objeto);
-        elementos.contenedorJuego.appendChild(objeto);
     }
 }
 
-function posicionarElemento(elemento, posicion = null) {
-    if (!posicion) {
-        posicion = {
-            x: Math.random() * (config.tamañoMapa.ancho - 50),
-            y: Math.random() * (config.tamañoMapa.alto - 50)
-        };
+function mover(direccion) {
+    if (!juego.activo) return;
+    
+    const paso = 20;
+    switch(direccion) {
+        case 'up': juego.posY = Math.max(0, juego.posY - paso); break;
+        case 'down': juego.posY = Math.min(440, juego.posY + paso); break;
+        case 'left': juego.posX = Math.max(0, juego.posX - paso); break;
+        case 'right': juego.posX = Math.min(740, juego.posX + paso); break;
     }
-    elemento.style.left = `${posicion.x}px`;
-    elemento.style.top = `${posicion.y}px`;
+    
+    DOM.milei.style.left = juego.posX + 'px';
+    DOM.milei.style.top = juego.posY + 'px';
+    sonidos.movimiento.play();
+    verificarColisiones();
 }
 
-function moverAgentes() {
+function verificarColisiones() {
+    // Colisión con agentes
     juego.agentes.forEach(agente => {
-        const posAgente = {
-            x: parseInt(agente.style.left),
-            y: parseInt(agente.style.top)
-        };
+        const rectAgente = agente.getBoundingClientRect();
+        const rectMilei = DOM.milei.getBoundingClientRect();
         
-        // Movimiento inteligente hacia Milei
-        const dx = juego.posicionMilei.x - posAgente.x;
-        const dy = juego.posicionMilei.y - posAgente.y;
-        const distancia = Math.sqrt(dx * dx + dy * dy);
-
-        if (distancia < config.radioDeteccion) {
-            const velocidad = 3;
-            const angulo = Math.atan2(dy, dx);
-            agente.style.left = `${posAgente.x + Math.cos(angulo) * velocidad}px`;
-            agente.style.top = `${posAgente.y + Math.sin(angulo) * velocidad}px`;
-        } else {
-            // Movimiento aleatorio
-            agente.style.left = `${posAgente.x + (Math.random() * 6 - 3)}px`;
-            agente.style.top = `${posAgente.y + (Math.random() * 6 - 3)}px`;
+        if (rectAgente.left < rectMilei.right && 
+            rectAgente.right > rectMilei.left && 
+            rectAgente.top < rectMilei.bottom && 
+            rectAgente.bottom > rectMilei.top) {
+            manejarColisionAgente();
         }
-
-        mantenerEnMapa(agente);
-        verificarColision(agente);
     });
-}
-
-function mantenerEnMapa(elemento) {
-    const x = Math.max(0, Math.min(parseInt(elemento.style.left), config.tamañoMapa.ancho - 50));
-    const y = Math.max(0, Math.min(parseInt(elemento.style.top), config.tamañoMapa.alto - 50));
-    elemento.style.left = `${x}px`;
-    elemento.style.top = `${y}px`;
-}
-
-function verificarColision(agente) {
-    const rectMilei = elementos.milei.getBoundingClientRect();
-    const rectAgente = agente.getBoundingClientRect();
-
-    if (rectMilei.left < rectAgente.right &&
-        rectMilei.right > rectAgente.left &&
-        rectMilei.top < rectAgente.bottom &&
-        rectMilei.bottom > rectAgente.top) {
-        manejarColisionAgente();
-    }
 }
 
 function manejarColisionAgente() {
     juego.pistasFBI += 2;
     sonidos.alerta.play();
     actualizarUI();
-    mostrarMensaje("¡Agente del FBI te ha detectado!", 2000);
     
     if (juego.pistasFBI >= 10) {
         terminarJuego(false);
     }
 }
 
-function iniciarLoopJuego() {
-    const loop = setInterval(() => {
-        if (!juego.activo) return;
-        
-        // Verificar objetos
-        juego.objetos.forEach((objeto, index) => {
-            const rectObjeto = objeto.getBoundingClientRect();
-            const rectMilei = elementos.milei.getBoundingClientRect();
-
-            if (rectMilei.left < rectObjeto.right &&
-                rectMilei.right > rectObjeto.left &&
-                rectMilei.top < rectObjeto.bottom &&
-                rectMilei.bottom > rectObjeto.top) {
-                manejarObjeto(objeto, index);
-            }
-        });
-
-        // Actualizar UI
-        actualizarUI();
-    }, 100);
-
-    juego.intervalos.push(loop);
-}
-
-function manejarObjeto(objeto, index) {
-    const tipo = objeto.dataset.tipo;
-    sonidos.recolectar.play();
-
+function recolectarObjeto(objeto) {
+    const tipo = objeto.src.split('/').pop().replace('.png', '');
+    
     switch(tipo) {
         case 'moneda':
             juego.apoyo = Math.min(100, juego.apoyo + 15);
+            sonidos.moneda.play();
             break;
         case 'documento':
             juego.pistasFBI = Math.max(0, juego.pistasFBI - 1);
@@ -198,86 +128,26 @@ function manejarObjeto(objeto, index) {
             juego.apoyo = Math.max(0, juego.apoyo - 20);
             break;
     }
-
+    
     objeto.remove();
-    juego.objetos.splice(index, 1);
     actualizarUI();
 }
 
 function actualizarUI() {
-    elementos.apoyo.textContent = juego.apoyo;
-    elementos.pistas.textContent = juego.pistasFBI;
-    elementos.barraProgreso.style.width = `${juego.pistasFBI * 10}%`;
-
-    if (juego.apoyo <= 0) {
-        terminarJuego(false);
-    }
+    DOM.nivel.textContent = juego.nivel;
+    DOM.apoyo.textContent = juego.apoyo;
+    DOM.pistas.textContent = juego.pistasFBI;
+    
+    if (juego.apoyo <= 0) terminarJuego(false);
 }
 
 function terminarJuego(victoria) {
     juego.activo = false;
-    juego.intervalos.forEach(clearInterval);
-    elementos.pantallaFin.classList.remove('oculto');
-    elementos.pantallaJuego.classList.add('oculto');
-    
-    document.getElementById('titulo-fin').textContent = victoria ? 
-        "¡Escape Exitoso!" : "¡Capturado!";
-    document.getElementById('mensaje-fin').textContent = victoria ?
-        "Lograste escapar con la evidencia" :
-        "Demasiadas pistas acumuladas por el FBI";
+    DOM.juego.style.display = 'none';
+    DOM.fin.style.display = 'block';
+    DOM.resultado.textContent = victoria ? '¡Escape Exitoso!' : '¡Capturado!';
 }
 
-function reiniciarJuego() {
-    elementos.pantallaFin.classList.add('oculto');
-    juego = {
-        ...juego,
-        nivelActual: 0,
-        apoyo: 100,
-        pistasFBI: 0,
-        agentes: [],
-        objetos: [],
-        intervalos: [],
-        activo: false
-    };
-    iniciarJuego();
-}
-
-// Eventos
-document.addEventListener('DOMContentLoaded', () => {
-    juego.intervalos.push(setInterval(moverAgentes, 100));
-});
-
-// Movimiento del jugador
-function mover(direccion) {
-    if (!juego.activo) return;
-
-    const velocidad = 20;
-    switch(direccion) {
-        case 'up':
-            juego.posicionMilei.y = Math.max(0, juego.posicionMilei.y - velocidad);
-            break;
-        case 'down':
-            juego.posicionMilei.y = Math.min(config.tamañoMapa.alto - 50, juego.posicionMilei.y + velocidad);
-            break;
-        case 'left':
-            juego.posicionMilei.x = Math.max(0, juego.posicionMilei.x - velocidad);
-            break;
-        case 'right':
-            juego.posicionMilei.x = Math.min(config.tamañoMapa.ancho - 50, juego.posicionMilei.x + velocidad);
-            break;
-    }
-    elementos.milei.style.left = `${juego.posicionMilei.x}px`;
-    elementos.milei.style.top = `${juego.posicionMilei.y}px`;
-    sonidos.movimiento.play();
-}
-
-function mostrarMensaje(texto, duracion = 2000) {
-    const mensaje = document.createElement('div');
-    mensaje.className = 'mensaje-flotante';
-    mensaje.textContent = texto;
-    elementos.contenedorJuego.appendChild(mensaje);
-    
-    setTimeout(() => {
-        mensaje.remove();
-    }, duracion);
+function reiniciar() {
+    location.reload();
 }
