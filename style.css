@@ -7,6 +7,31 @@ body {
     padding: 0;
 }
 
+#pantalla-inicio, #pantalla-fin {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#pantalla-inicio button, #pantalla-fin button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+#juego {
+    display: none;
+}
+
 header {
     margin: 20px;
 }
@@ -39,7 +64,7 @@ h1 {
 
 #game-container {
     position: relative;
-    width: 100%;
+    width: 600px; /* Tamaño reducido */
     height: 400px;
     border: 2px solid white;
     margin: 20px auto;
@@ -50,14 +75,10 @@ h1 {
     background-size: cover;
 }
 
-#milei {
+#milei, .agente-fbi, .objeto {
     position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     width: 50px;
     height: 50px;
-    transition: all 0.2s ease;
 }
 
 #punto-escape {
@@ -68,20 +89,6 @@ h1 {
     border-radius: 50%;
     bottom: 20px;
     right: 20px;
-}
-
-#agente-fbi {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    top: 50px;
-    left: 50px;
-}
-
-#objeto {
-    position: absolute;
-    width: 30px;
-    height: 30px;
 }
 
 footer {
@@ -96,7 +103,6 @@ button {
     font-size: 1.2rem;
     cursor: pointer;
     border-radius: 5px;
-    transition: all 0.3s ease;
     margin: 5px;
 }
 
@@ -111,7 +117,6 @@ button:hover {
     margin-top: 20px;
 }
 
-/* Estilos para los mensajes */
 #mensajes {
     position: fixed;
     bottom: 20px;
@@ -128,7 +133,10 @@ button:hover {
 
 /* Responsive Design */
 @media (max-width: 600px) {
-    #milei {
+    #game-container {
+        width: 100%;
+    }
+    #milei, .agente-fbi, .objeto {
         width: 40px;
         height: 40px;
     }
