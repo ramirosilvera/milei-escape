@@ -3,61 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milei Escape: El Escándalo $LIBRA</title>
+    <title>Milei Escape: Escándalo $LIBRA</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Pantalla de Inicio -->
-    <div id="pantalla-inicio">
-        <h1>Milei Escape: El Escándalo $LIBRA</h1>
-        <p>Ayuda a Javier Milei a escapar del FBI mientras recolectas evidencia para limpiar su nombre. ¡Evita ser capturado!</p>
-        <button onclick="comenzarJuego()">Comenzar</button>
+    <div id="pantalla-inicio" class="pantalla">
+        <h1>Milei Escape: Escándalo $LIBRA</h1>
+        <p>¡Ayuda a Milei a escapar del FBI mientras destapas el complot cripto!</p>
+        <button onclick="iniciarJuego()">Comenzar</button>
     </div>
 
     <!-- Juego -->
-    <div id="juego" style="display: none;">
+    <div id="juego" class="pantalla oculto">
         <header>
-            <h1>Milei Escape: El Escándalo $LIBRA</h1>
-            <h2 id="apoyo-popular">Apoyo Popular: 100%</h2>
-            <h2 id="pistas-fbi">Pistas del FBI: 0</h2>
+            <h2>Nivel: <span id="nivel-actual">1</span></h2>
+            <div class="estadisticas">
+                <div>🟡 Apoyo: <span id="apoyo-popular">100</span>%</div>
+                <div>🕵️ Pistas FBI: <span id="pistas-fbi">0</span>/10</div>
+            </div>
             <div id="barra-progreso-fbi">
                 <div id="progreso-fbi"></div>
             </div>
-            <h2 id="nivel-actual">Nivel: 1</h2>
         </header>
 
         <div id="game-container">
-            <img src="milei.png" id="milei" alt="Milei">
+            <div id="mapa"></div>
+            <img src="img/milei.png" id="milei" class="personaje">
             <div id="punto-escape"></div>
-            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
-            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
-            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
-            <img src="moneda.png" class="objeto" alt="Moneda">
-            <img src="documento.png" class="objeto" alt="Documento">
         </div>
 
-        <div id="arrow-buttons">
-            <button id="up" onclick="mover('up')">↑</button>
-            <button id="left" onclick="mover('left')">←</button>
-            <button id="right" onclick="mover('right')">→</button>
-            <button id="down" onclick="mover('down')">↓</button>
+        <div id="controles">
+            <button onclick="mover('up')">↑</button>
+            <button onclick="mover('left')">←</button>
+            <button onclick="mover('right')">→</button>
+            <button onclick="mover('down')">↓</button>
         </div>
-
-        <footer>
-            <button onclick="tweetDefensivo()">Tweet Defensivo</button>
-            <button onclick="tweetControversial()">Tweet Controversial</button>
-            <button onclick="eventoAleatorio()">Evento Aleatorio</button>
-            <button onclick="intentarEscapar()">Intentar Escapar</button>
-        </footer>
-
-        <!-- Área para mostrar mensajes -->
-        <div id="mensajes"></div>
     </div>
 
     <!-- Pantalla de Fin -->
-    <div id="pantalla-fin" style="display: none;">
-        <h1 id="mensaje-fin"></h1>
-        <button onclick="reiniciarJuego()">Reiniciar</button>
+    <div id="pantalla-fin" class="pantalla oculto">
+        <h1 id="titulo-fin"></h1>
+        <p id="mensaje-fin"></p>
+        <button onclick="reiniciarJuego()">Jugar de nuevo</button>
     </div>
 
     <script src="script.js"></script>
