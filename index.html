@@ -7,19 +7,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="gameContainer">
-        <h1 id="gameTitle">Milei Escape: La Gran Evasión</h1>
-        <canvas id="gameCanvas" width="500" height="500"></canvas>
-        
-        <div id="buttons">
-            <button id="upBtn" class="btn">⬆️</button>
-            <div>
-                <button id="leftBtn" class="btn">⬅️</button>
-                <button id="rightBtn" class="btn">➡️</button>
-            </div>
-            <button id="downBtn" class="btn">⬇️</button>
-        </div>
+    <header>
+        <h1>Milei Escape: La Gran Evasión</h1>
+        <h2 id="apoyo-popular">Apoyo Popular: 100%</h2>
+        <h2 id="pistas-fbi">Pistas del FBI: 0</h2>
+    </header>
+
+    <div id="game-container">
+        <img src="milei.png" id="milei" alt="Milei">
     </div>
+
+    <div id="arrow-buttons">
+        <button id="up" onclick="mover('up')">↑</button>
+        <button id="left" onclick="mover('left')">←</button>
+        <button id="right" onclick="mover('right')">→</button>
+        <button id="down" onclick="mover('down')">↓</button>
+    </div>
+
+    <footer>
+        <button onclick="tweetDefensivo()">Tweet Defensivo</button>
+        <button onclick="tweetControversial()">Tweet Controversial</button>
+        <button onclick="eventoAleatorio()">Evento Aleatorio</button>
+    </footer>
 
     <script src="script.js"></script>
 </body>
