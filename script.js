@@ -82,14 +82,13 @@ function eventoAleatorio() {
 
 // Función para mostrar mensajes en pantalla
 function mostrarMensaje(mensaje) {
-    const mensajeElemento = document.createElement("div");
-    mensajeElemento.className = "efecto-visual";
-    mensajeElemento.innerText = mensaje;
-    document.body.appendChild(mensajeElemento);
+    const mensajesDiv = document.getElementById("mensajes");
+    mensajesDiv.innerText = mensaje;
+    mensajesDiv.style.display = "block"; // Mostrar el mensaje
 
-    // Eliminar el mensaje después de 3 segundos
+    // Ocultar el mensaje después de 3 segundos
     setTimeout(() => {
-        mensajeElemento.remove();
+        mensajesDiv.style.display = "none";
     }, 3000);
 }
 
