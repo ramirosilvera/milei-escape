@@ -1,3 +1,4 @@
+// Variables del juego
 let apoyoPopular = 100;  // Comienza con un apoyo del 100%
 let pistasFBI = 0;
 let mileiPosition = { x: 50, y: 10 };  // Posición inicial de Milei
@@ -14,6 +15,7 @@ function actualizarApoyo(cantidad) {
 function agregarPista() {
     pistasFBI++;
     document.getElementById("pistas-fbi").innerText = "Pistas del FBI: " + pistasFBI;
+    reproducirSonido('sounds/sirena.wav'); // Sonido de sirena al agregar una pista
 
     // Verificar si el jugador pierde
     if (pistasFBI >= 10) {
@@ -44,6 +46,7 @@ function mover(direccion) {
 
     milei.style.top = mileiPosition.y + "px";
     milei.style.left = mileiPosition.x + "px";
+    reproducirSonido('sounds/click.wav'); // Sonido de clic al mover a Milei
 }
 
 // Función para publicar un tweet defensivo
@@ -51,7 +54,7 @@ function tweetDefensivo() {
     actualizarApoyo(5);  // Aumenta el apoyo en 5%
     agregarPista();  // Añade una pista del FBI
     mostrarMensaje("Has publicado un tweet defensivo. ¡El apoyo popular aumenta!");
-    reproducirSonido('sonido-defensivo.mp3');
+    reproducirSonido('sounds/notification.wav'); // Sonido de notificación
 }
 
 // Función para publicar un tweet controversial
@@ -59,7 +62,7 @@ function tweetControversial() {
     actualizarApoyo(-10);  // Disminuye el apoyo en 10%
     agregarPista();  // Añade una pista del FBI
     mostrarMensaje("Has publicado un tweet controversial. ¡El apoyo popular disminuye!");
-    reproducirSonido('sonido-controversial.mp3');
+    reproducirSonido('sounds/notification.wav'); // Sonido de notificación
 }
 
 // Función para manejar eventos aleatorios
@@ -74,7 +77,7 @@ function eventoAleatorio() {
     actualizarApoyo(evento.apoyo);
     pistasFBI += evento.pistas;
     mostrarMensaje(evento.mensaje);
-    reproducirSonido('sonido-evento.mp3');
+    reproducirSonido('sounds/coin.wav'); // Sonido de moneda
 }
 
 // Función para mostrar mensajes en pantalla
@@ -100,8 +103,10 @@ function reproducirSonido(src) {
 function finDelJuego(resultado) {
     if (resultado === "Captura") {
         mostrarMensaje("¡Has sido capturado por el FBI! Game Over.");
+        reproducirSonido('sounds/sirena.wav'); // Sonido de sirena al ser capturado
     } else if (resultado === "Escape Exitoso") {
         mostrarMensaje("¡Lograste escapar! ¡Felicidades!");
+        reproducirSonido('sounds/coin.wav'); // Sonido de moneda al escapar
     }
     // Reiniciar el juego o mostrar opciones...
 }
