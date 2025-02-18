@@ -7,16 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="gameCanvas" width="500" height="500"></canvas>
-
-    <!-- Botones de movimiento -->
-    <div id="buttons">
-        <button id="upBtn" class="btn">⬆️</button>
-        <div>
-            <button id="leftBtn" class="btn">⬅️</button>
-            <button id="rightBtn" class="btn">➡️</button>
+    <div id="gameContainer">
+        <h1 id="gameTitle">Milei Escape: La Gran Evasión</h1>
+        <canvas id="gameCanvas" width="500" height="500"></canvas>
+        
+        <!-- Contenedor de botones de movimiento -->
+        <div id="buttons">
+            <button id="upBtn" class="btn">⬆️</button>
+            <div>
+                <button id="leftBtn" class="btn">⬅️</button>
+                <button id="rightBtn" class="btn">➡️</button>
+            </div>
+            <button id="downBtn" class="btn">⬇️</button>
         </div>
-        <button id="downBtn" class="btn">⬇️</button>
     </div>
 
     <script src="script.js"></script>
