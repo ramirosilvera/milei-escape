@@ -15,6 +15,7 @@ function actualizarApoyo(cantidad) {
 function agregarPista() {
     pistasFBI++;
     document.getElementById("pistas-fbi").innerText = "Pistas del FBI: " + pistasFBI;
+    document.getElementById("progreso-fbi").style.width = (pistasFBI * 10) + "%"; // Actualiza la barra
     reproducirSonido('sounds/sirena.wav'); // Sonido de sirena al agregar una pista
 
     // Verificar si el jugador pierde
@@ -70,7 +71,10 @@ function eventoAleatorio() {
     const eventos = [
         { mensaje: "¡Reunión sospechosa detectada!", apoyo: -5, pistas: 1 },
         { mensaje: "Protestas de inversores en aumento.", apoyo: -10, pistas: 0 },
-        { mensaje: "Aliado clave te apoya públicamente.", apoyo: 10, pistas: -1 }
+        { mensaje: "Aliado clave te apoya públicamente.", apoyo: 10, pistas: -1 },
+        { mensaje: "Descubren una transacción sospechosa.", apoyo: -5, pistas: 2 },
+        { mensaje: "Un periodista publica una nota favorable.", apoyo: 15, pistas: -1 },
+        { mensaje: "El FBI encuentra una pista clave.", apoyo: -5, pistas: 3 }
     ];
 
     const evento = eventos[Math.floor(Math.random() * eventos.length)];
@@ -78,6 +82,15 @@ function eventoAleatorio() {
     pistasFBI += evento.pistas;
     mostrarMensaje(evento.mensaje);
     reproducirSonido('sounds/coin.wav'); // Sonido de moneda
+}
+
+// Función para intentar escapar
+function intentarEscapar() {
+    if (pistasFBI === 0 && apoyoPopular >= 50) {
+        finDelJuego("Escape Exitoso");
+    } else {
+        mostrarMensaje("No puedes escapar todavía. ¡Reduce las pistas del FBI y mantén el apoyo popular!");
+    }
 }
 
 // Función para mostrar mensajes en pantalla
@@ -100,6 +113,16 @@ function reproducirSonido(src) {
     });
 }
 
+// Función para reproducir música de fondo
+function reproducirMusicaFondo() {
+    const musica = new Audio('sounds/musica-fondo.wav');
+    musica.loop = true; // Repetir la música en bucle
+    musica.volume = 0.5; // Ajustar el volumen
+    musica.play().catch(error => {
+        console.error("Error al reproducir la música:", error);
+    });
+}
+
 // Función para finalizar el juego
 function finDelJuego(resultado) {
     if (resultado === "Captura") {
@@ -111,3 +134,9 @@ function finDelJuego(resultado) {
     }
     // Reiniciar el juego o mostrar opciones...
 }
+
+// Llamar a la función de música al cargar la página
+window.onload = reproducirMusicaFondo;
+
+// Evento aleatorio cada 10 segundos
+setInterval(eventoAleatorio, 10000);
