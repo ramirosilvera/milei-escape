@@ -96,7 +96,9 @@ function mostrarMensaje(mensaje) {
 // Función para reproducir sonidos
 function reproducirSonido(src) {
     const audio = new Audio(src);
-    audio.play();
+    audio.play().catch(error => {
+        console.error("Error al reproducir el sonido:", error);
+    });
 }
 
 // Función para finalizar el juego
