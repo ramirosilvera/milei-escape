@@ -3,19 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milei Escape</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Milei Escape: La Gran Evasión</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #gameCanvas {
+            border: 1px solid black;
+            background-color: #fff;
+        }
+        /* Estilo para los botones de movimiento */
+        #buttons {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 70px;
+            height: 70px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:active {
+            background-color: #003f7f;
+        }
+        #leftBtn, #rightBtn {
+            width: 70px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Milei Escape: La Gran Evasión</h1>
-    <canvas id="gameCanvas"></canvas>
-    <script src="script.js"></script>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+
     <!-- Botones de movimiento -->
-<div id="buttons" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; gap: 10px;">
-    <button id="leftBtn" style="padding: 10px 20px;">⬅️</button>
-    <button id="upBtn" style="padding: 10px 20px;">⬆️</button>
-    <button id="rightBtn" style="padding: 10px 20px;">➡️</button>
-    <button id="downBtn" style="padding: 10px 20px;">⬇️</button>
-</div>
+    <div id="buttons">
+        <button id="upBtn" class="btn">⬆️</button>
+        <div>
+            <button id="leftBtn" class="btn">⬅️</button>
+            <button id="rightBtn" class="btn">➡️</button>
+        </div>
+        <button id="downBtn" class="btn">⬇️</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
