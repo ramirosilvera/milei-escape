@@ -3,42 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milei Escape: La Gran Evasión</title>
+    <title>Milei Escape: El Escándalo $LIBRA</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Milei Escape: La Gran Evasión</h1>
-        <h2 id="apoyo-popular">Apoyo Popular: 100%</h2>
-        <h2 id="pistas-fbi">Pistas del FBI: 0</h2>
-        <div id="barra-progreso-fbi">
-            <div id="progreso-fbi"></div>
+    <!-- Pantalla de Inicio -->
+    <div id="pantalla-inicio">
+        <h1>Milei Escape: El Escándalo $LIBRA</h1>
+        <p>Ayuda a Javier Milei a escapar del FBI mientras recolectas evidencia para limpiar su nombre. ¡Evita ser capturado!</p>
+        <button onclick="comenzarJuego()">Comenzar</button>
+    </div>
+
+    <!-- Juego -->
+    <div id="juego" style="display: none;">
+        <header>
+            <h1>Milei Escape: El Escándalo $LIBRA</h1>
+            <h2 id="apoyo-popular">Apoyo Popular: 100%</h2>
+            <h2 id="pistas-fbi">Pistas del FBI: 0</h2>
+            <div id="barra-progreso-fbi">
+                <div id="progreso-fbi"></div>
+            </div>
+        </header>
+
+        <div id="game-container">
+            <img src="milei.png" id="milei" alt="Milei">
+            <div id="punto-escape"></div>
+            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
+            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
+            <img src="fbi.png" class="agente-fbi" alt="Agente del FBI">
+            <img src="moneda.png" class="objeto" alt="Moneda">
+            <img src="documento.png" class="objeto" alt="Documento">
         </div>
-    </header>
 
-    <div id="game-container">
-        <img src="milei.png" id="milei" alt="Milei">
-        <div id="punto-escape"></div>
-        <img src="fbi.png" id="agente-fbi" alt="Agente del FBI">
-        <img src="moneda.png" id="objeto" alt="Moneda">
+        <div id="arrow-buttons">
+            <button id="up" onclick="mover('up')">↑</button>
+            <button id="left" onclick="mover('left')">←</button>
+            <button id="right" onclick="mover('right')">→</button>
+            <button id="down" onclick="mover('down')">↓</button>
+        </div>
+
+        <footer>
+            <button onclick="tweetDefensivo()">Tweet Defensivo</button>
+            <button onclick="tweetControversial()">Tweet Controversial</button>
+            <button onclick="eventoAleatorio()">Evento Aleatorio</button>
+            <button onclick="intentarEscapar()">Intentar Escapar</button>
+        </footer>
+
+        <!-- Área para mostrar mensajes -->
+        <div id="mensajes"></div>
     </div>
 
-    <div id="arrow-buttons">
-        <button id="up" onclick="mover('up')">↑</button>
-        <button id="left" onclick="mover('left')">←</button>
-        <button id="right" onclick="mover('right')">→</button>
-        <button id="down" onclick="mover('down')">↓</button>
+    <!-- Pantalla de Fin -->
+    <div id="pantalla-fin" style="display: none;">
+        <h1 id="mensaje-fin"></h1>
+        <button onclick="reiniciarJuego()">Reiniciar</button>
     </div>
-
-    <footer>
-        <button onclick="tweetDefensivo()">Tweet Defensivo</button>
-        <button onclick="tweetControversial()">Tweet Controversial</button>
-        <button onclick="eventoAleatorio()">Evento Aleatorio</button>
-        <button onclick="intentarEscapar()">Intentar Escapar</button>
-    </footer>
-
-    <!-- Área para mostrar mensajes -->
-    <div id="mensajes"></div>
 
     <script src="script.js"></script>
 </body>
