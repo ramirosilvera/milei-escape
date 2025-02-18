@@ -57,7 +57,31 @@ h1 {
     transform: translateX(-50%);
     width: 50px;
     height: 50px;
-    transition: all 0.2s ease; /* Suaviza el movimiento */
+    transition: all 0.2s ease;
+}
+
+#punto-escape {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: green;
+    border-radius: 50%;
+    bottom: 20px;
+    right: 20px;
+}
+
+#agente-fbi {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: 50px;
+    left: 50px;
+}
+
+#objeto {
+    position: absolute;
+    width: 30px;
+    height: 30px;
 }
 
 footer {
@@ -99,7 +123,7 @@ button:hover {
     color: white;
     font-size: 1.2rem;
     z-index: 1000;
-    display: none; /* Oculto por defecto */
+    display: none;
 }
 
 /* Responsive Design */
