@@ -15,20 +15,35 @@ milei.onload = function () {
     ctx.drawImage(milei, mileiX, mileiY, 50, 50);
 };
 
-// Detectar teclas presionadas
-document.addEventListener("keydown", function (event) {
+// Funciones para mover a Milei
+function moverIzquierda() {
+    mileiX -= velocidad;
+    actualizarPosicion();
+}
+
+function moverDerecha() {
+    mileiX += velocidad;
+    actualizarPosicion();
+}
+
+function moverArriba() {
+    mileiY -= velocidad;
+    actualizarPosicion();
+}
+
+function moverAbajo() {
+    mileiY += velocidad;
+    actualizarPosicion();
+}
+
+// Función para actualizar la posición
+function actualizarPosicion() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
+    ctx.drawImage(milei, mileiX, mileiY, 50, 50); // Volver a dibujar a Milei en la nueva posición
+}
 
-    if (event.key === "ArrowRight") {
-        mileiX += velocidad;
-    } else if (event.key === "ArrowLeft") {
-        mileiX -= velocidad;
-    } else if (event.key === "ArrowUp") {
-        mileiY -= velocidad;
-    } else if (event.key === "ArrowDown") {
-        mileiY += velocidad;
-    }
-
-    // Volver a dibujar a Milei en la nueva posición
-    ctx.drawImage(milei, mileiX, mileiY, 50, 50);
-});
+// Asignar eventos a los botones
+document.getElementById("leftBtn").addEventListener("click", moverIzquierda);
+document.getElementById("rightBtn").addEventListener("click", moverDerecha);
+document.getElementById("upBtn").addEventListener("click", moverArriba);
+document.getElementById("downBtn").addEventListener("click", moverAbajo);
