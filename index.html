@@ -7,30 +7,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Pantalla de Inicio -->
-    <div id="pantalla-inicio" class="pantalla">
-        <h1>Milei Escape: Escándalo $LIBRA</h1>
-        <p>¡Ayuda a Milei a escapar del FBI mientras destapas el complot cripto!</p>
+    <div id="pantalla-inicio">
+        <h1>🦁 Milei Escape</h1>
+        <p>¡Evita al FBI y destapa el complot cripto!</p>
         <button onclick="iniciarJuego()">Comenzar</button>
     </div>
 
-    <!-- Juego -->
-    <div id="juego" class="pantalla oculto">
+    <div id="juego">
         <header>
-            <h2>Nivel: <span id="nivel-actual">1</span></h2>
-            <div class="estadisticas">
-                <div>🟡 Apoyo: <span id="apoyo-popular">100</span>%</div>
-                <div>🕵️ Pistas FBI: <span id="pistas-fbi">0</span>/10</div>
-            </div>
-            <div id="barra-progreso-fbi">
-                <div id="progreso-fbi"></div>
+            <h2>Nivel: <span id="nivel">1</span></h2>
+            <div class="contadores">
+                <div>🔴 FBI: <span id="pistas">0</span>/10</div>
+                <div>💵 Apoyo: <span id="apoyo">100</span>%</div>
             </div>
         </header>
 
         <div id="game-container">
-            <div id="mapa"></div>
-            <img src="img/milei.png" id="milei" class="personaje">
-            <div id="punto-escape"></div>
+            <img src="img/milei.png" id="milei">
+            <div id="salida"></div>
         </div>
 
         <div id="controles">
@@ -41,11 +35,9 @@
         </div>
     </div>
 
-    <!-- Pantalla de Fin -->
-    <div id="pantalla-fin" class="pantalla oculto">
-        <h1 id="titulo-fin"></h1>
-        <p id="mensaje-fin"></p>
-        <button onclick="reiniciarJuego()">Jugar de nuevo</button>
+    <div id="pantalla-fin">
+        <h1 id="resultado">¡Capturado!</h1>
+        <button onclick="reiniciar()">Reiniciar</button>
     </div>
 
     <script src="script.js"></script>
