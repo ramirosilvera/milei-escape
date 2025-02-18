@@ -1,61 +1,68 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+let apoyoPopular = 100;  // Comienza con un apoyo del 100%
+let pistasFBI = 0;
+let mileiPosition = { x: 50, y: 10 };  // Posición inicial de Milei
 
-// Crear el objeto Milei
-const milei = new Image();
-milei.src = "https://ramirosilvera.github.io/milei-escape/milei.png";
+function actualizarApoyo(cantidad) {
+    apoyoPopular += cantidad;
+    if (apoyoPopular > 100) apoyoPopular = 100;
+    if (apoyoPopular < 0) apoyoPopular = 0;
+    document.getElementById("apoyo-popular").innerText = "Apoyo Popular: " + apoyoPopular + "%";
+}
 
-// Posición inicial de Milei
-let mileiX = 50;
-let mileiY = 50;
-const velocidad = 5; // Velocidad de movimiento
+function agregarPista() {
+    pistasFBI++;
+    document.getElementById("pistas-fbi").innerText = "Pistas del FBI: " + pistasFBI;
+}
 
-// Tamaño de la imagen de Milei
-const mileiWidth = 50;
-const mileiHeight = 50;
+function mover(direccion) {
+    const distancia = 10;  // Distancia en píxeles
+    const gameContainer = document.getElementById("game-container");
+    const milei = document.getElementById("milei");
 
-// Dibujar el personaje en el canvas
-milei.onload = function () {
-    ctx.drawImage(milei, mileiX, mileiY, mileiWidth, mileiHeight);
-};
+    switch (direccion) {
+        case 'up':
+            if (mileiPosition.y > 0) mileiPosition.y -= distancia;
+            break;
+        case 'down':
+            if (mileiPosition.y < gameContainer.offsetHeight - milei.offsetHeight) mileiPosition.y += distancia;
+            break;
+        case 'left':
+            if (mileiPosition.x > 0) mileiPosition.x -= distancia;
+            break;
+        case 'right':
+            if (mileiPosition.x < gameContainer.offsetWidth - milei.offsetWidth) mileiPosition.x += distancia;
+            break;
+    }
 
-// Funciones para mover a Milei
-function moverIzquierda() {
-    if (mileiX > 0) {
-        mileiX -= velocidad;
-        actualizarPosicion();
+    milei.style.top = mileiPosition.y + "px";
+    milei.style.left = mileiPosition.x + "px";
+}
+
+function tweetDefensivo() {
+    actualizarApoyo(5);  // Aumenta el apoyo en 5%
+    // Código adicional para el tweet defensivo...
+}
+
+function tweetControversial() {
+    actualizarApoyo(-10);  // Disminuye el apoyo en 10%
+    // Código adicional para el tweet controversial...
+}
+
+function eventoAleatorio() {
+    const evento = Math.floor(Math.random() * 3);  // Elegir entre 3 eventos aleatorios
+
+    switch (evento) {
+        case 0:
+            // Encuentro con un aliado
+            agregarPista();
+            break;
+        case 1:
+            // Protestas de inversores
+            actualizarApoyo(-5);  // Disminuye el apoyo
+            break;
+        case 2:
+            // Nota de prensa negativa
+            agregarPista();
+            break;
     }
 }
-
-function moverDerecha() {
-    if (mileiX < canvas.width - mileiWidth) {
-        mileiX += velocidad;
-        actualizarPosicion();
-    }
-}
-
-function moverArriba() {
-    if (mileiY > 0) {
-        mileiY -= velocidad;
-        actualizarPosicion();
-    }
-}
-
-function moverAbajo() {
-    if (mileiY < canvas.height - mileiHeight) {
-        mileiY += velocidad;
-        actualizarPosicion();
-    }
-}
-
-// Función para actualizar la posición
-function actualizarPosicion() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
-    ctx.drawImage(milei, mileiX, mileiY, mileiWidth, mileiHeight); // Volver a dibujar a Milei en la nueva posición
-}
-
-// Asignar eventos a los botones
-document.getElementById("leftBtn").addEventListener("click", moverIzquierda);
-document.getElementById("rightBtn").addEventListener("click", moverDerecha);
-document.getElementById("upBtn").addEventListener("click", moverArriba);
-document.getElementById("downBtn").addEventListener("click", moverAbajo);
