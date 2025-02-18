@@ -48,6 +48,107 @@ function mover(direccion) {
     milei.style.top = mileiPosition.y + "px";
     milei.style.left = mileiPosition.x + "px";
     reproducirSonido('sounds/click.wav'); // Sonido de clic al mover a Milei
+    verificarEscape(); // Verificar si Milei llegó al punto de escape
+    verificarRecoleccion(); // Verificar si Milei recolectó un objeto
+}
+
+// Función para verificar si Milei llegó al punto de escape
+function verificarEscape() {
+    const milei = document.getElementById("milei");
+    const escape = document.getElementById("punto-escape");
+
+    const mileiRect = milei.getBoundingClientRect();
+    const escapeRect = escape.getBoundingClientRect();
+
+    if (mileiRect.left < escapeRect.right &&
+        mileiRect.right > escapeRect.left &&
+        mileiRect.top < escapeRect.bottom &&
+        mileiRect.bottom > escapeRect.top) {
+        finDelJuego("Escape Exitoso");
+    }
+}
+
+// Función para mover al agente del FBI
+function moverAgente() {
+    const agente = document.getElementById("agente-fbi");
+    const gameContainer = document.getElementById("game-container");
+
+    const direcciones = ["up", "down", "left", "right"];
+    const direccion = direcciones[Math.floor(Math.random() * direcciones.length)];
+
+    const distancia = 10;
+    const posicionActual = {
+        x: parseInt(agente.style.left) || 50,
+        y: parseInt(agente.style.top) || 50
+    };
+
+    switch (direccion) {
+        case 'up':
+            posicionActual.y = Math.max(0, posicionActual.y - distancia);
+            break;
+        case 'down':
+            posicionActual.y = Math.min(gameContainer.offsetHeight - 50, posicionActual.y + distancia);
+            break;
+        case 'left':
+            posicionActual.x = Math.max(0, posicionActual.x - distancia);
+            break;
+        case 'right':
+            posicionActual.x = Math.min(gameContainer.offsetWidth - 50, posicionActual.x + distancia);
+            break;
+    }
+
+    agente.style.left = posicionActual.x + "px";
+    agente.style.top = posicionActual.y + "px";
+
+    // Verificar colisión con Milei
+    verificarColisionAgente();
+}
+
+// Función para verificar colisión con el agente del FBI
+function verificarColisionAgente() {
+    const milei = document.getElementById("milei");
+    const agente = document.getElementById("agente-fbi");
+
+    const mileiRect = milei.getBoundingClientRect();
+    const agenteRect = agente.getBoundingClientRect();
+
+    if (mileiRect.left < agenteRect.right &&
+        mileiRect.right > agenteRect.left &&
+        mileiRect.top < agenteRect.bottom &&
+        mileiRect.bottom > agenteRect.top) {
+        agregarPista(); // Añadir una pista si hay colisión
+        mostrarMensaje("¡Un agente del FBI te ha visto!");
+    }
+}
+
+// Función para colocar un objeto en una posición aleatoria
+function colocarObjeto() {
+    const objeto = document.getElementById("objeto");
+    const gameContainer = document.getElementById("game-container");
+
+    const x = Math.floor(Math.random() * (gameContainer.offsetWidth - 30));
+    const y = Math.floor(Math.random() * (gameContainer.offsetHeight - 30));
+
+    objeto.style.left = x + "px";
+    objeto.style.top = y + "px";
+}
+
+// Función para verificar si Milei recolectó un objeto
+function verificarRecoleccion() {
+    const milei = document.getElementById("milei");
+    const objeto = document.getElementById("objeto");
+
+    const mileiRect = milei.getBoundingClientRect();
+    const objetoRect = objeto.getBoundingClientRect();
+
+    if (mileiRect.left < objetoRect.right &&
+        mileiRect.right > objetoRect.left &&
+        mileiRect.top < objetoRect.bottom &&
+        mileiRect.bottom > objetoRect.top) {
+        actualizarApoyo(10); // Aumentar el apoyo popular
+        mostrarMensaje("¡Has recolectado una moneda!");
+        colocarObjeto(); // Colocar un nuevo objeto
+    }
 }
 
 // Función para publicar un tweet defensivo
@@ -136,7 +237,9 @@ function finDelJuego(resultado) {
 }
 
 // Llamar a la función de música al cargar la página
-window.onload = reproducirMusicaFondo;
-
-// Evento aleatorio cada 10 segundos
-setInterval(eventoAleatorio, 10000);
+window.onload = function () {
+    reproducirMusicaFondo();
+    colocarObjeto(); // Colocar el primer objeto
+    setInterval(moverAgente, 2000); // Mover al agente cada 2 segundos
+    setInterval(eventoAleatorio, 10000); // Evento aleatorio cada 10 segundos
+};
