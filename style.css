@@ -147,3 +147,27 @@ header {
     border-radius: 8px;
     cursor: pointer;
 }
+
+.mensaje-flotante {
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    animation: flotar 2s ease-out;
+    z-index: 1000;
+}
+
+@keyframes flotar {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
+
+.agente-fbi {
+    transition: transform 0.3s ease;
+}
+
+.agente-fbi:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 5px red);
+}
