@@ -7,12 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Pantalla de Inicio -->
     <div id="pantalla-inicio">
         <h1>🦁 Milei Escape</h1>
-        <p>¡Evita al FBI y destapa el complot cripto!</p>
+        <p>¡Ayuda a Milei a escapar del FBI y destapar el complot cripto!</p>
         <button onclick="iniciarJuego()">Comenzar</button>
     </div>
 
+    <!-- Juego -->
     <div id="juego">
         <header>
             <h2>Nivel: <span id="nivel">1</span></h2>
@@ -22,11 +24,10 @@
             </div>
         </header>
 
-        <div id="game-container">
-            <img src="img/milei.png" id="milei">
-            <div id="salida"></div>
-        </div>
+        <!-- Canvas para el juego -->
+        <canvas id="game-canvas"></canvas>
 
+        <!-- Controles -->
         <div id="controles">
             <button onclick="mover('up')">↑</button>
             <button onclick="mover('left')">←</button>
@@ -35,8 +36,9 @@
         </div>
     </div>
 
+    <!-- Pantalla de Fin -->
     <div id="pantalla-fin">
-        <h1 id="resultado">¡Capturado!</h1>
+        <h1 id="resultado"></h1>
         <button onclick="reiniciar()">Reiniciar</button>
     </div>
 
