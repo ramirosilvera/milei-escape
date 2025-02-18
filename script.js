@@ -1,4 +1,35 @@
 // Variables del juego
+let apoyoPopular = 100;
+let pistasFBI = 0;
+let mileiPosition = { x: 50, y: 10 };
+let juegoActivo = false;
+
+// Función para comenzar el juego
+function comenzarJuego() {
+    document.getElementById("pantalla-inicio").style.display = "none";
+    document.getElementById("juego").style.display = "block";
+    juegoActivo = true;
+    reproducirMusicaFondo();
+    colocarObjetos();
+    setInterval(moverAgentes, 2000);
+    setInterval(eventoAleatorio, 10000);
+}
+
+// Función para reiniciar el juego
+function reiniciarJuego() {
+    document.getElementById("pantalla-fin").style.display = "none";
+    document.getElementById("juego").style.display = "block";
+    apoyoPopular = 100;
+    pistasFBI = 0;
+    mileiPosition = { x: 50, y: 10 };
+    actualizarApoyo(0);
+    document.getElementById("progreso-fbi").style.width = "0%";
+    comenzarJuego();
+}
+
+// Resto del código (actualizarApoyo, agregarPista, mover, verificarEscape, etc.)...
+
+// Variables del juego
 let apoyoPopular = 100;  // Comienza con un apoyo del 100%
 let pistasFBI = 0;
 let mileiPosition = { x: 50, y: 10 };  // Posición inicial de Milei
