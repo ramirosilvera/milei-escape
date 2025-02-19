@@ -1,19 +1,17 @@
 const config = {
-    niveles: 3,
-    velocidadBaseFBI: 0.5,
+    velocidadMilei: 5,
+    velocidadFBI: 1,
     radioDeteccion: 150,
     tamañoCanvas: { ancho: 800, alto: 500 }
 };
 
 let juego = {
+    activo: false,
     nivel: 1,
     apoyo: 100,
     pistasFBI: 0,
-    posX: 400,
-    posY: 250,
-    agentes: [],
-    objetos: [],
-    activo: false
+    milei: { x: 400, y: 250 },
+    agentes: []
 };
 
 const DOM = {
@@ -25,10 +23,9 @@ const DOM = {
     pistas: document.getElementById('pistas'),
     resultado: document.getElementById('resultado'),
     canvas: document.getElementById('game-canvas'),
-    ctx: null
+    ctx: document.getElementById('game-canvas').getContext('2d')
 };
 
-DOM.ctx = DOM.canvas.getContext('2d');
 DOM.canvas.width = config.tamañoCanvas.ancho;
 DOM.canvas.height = config.tamañoCanvas.alto;
 
@@ -38,27 +35,26 @@ function iniciarJuego() {
     DOM.fin.style.display = 'none';
 
     juego.activo = true;
+    juego.nivel = 1;
     juego.pistasFBI = 0;
     juego.apoyo = 100;
-    juego.nivel = 1;
+    juego.milei = { x: 400, y: 250 };
+    juego.agentes = [];
 
-    cargarNivel();
+    cargarAgentes();
     actualizarUI();
     loopJuego();
 }
 
-function cargarNivel() {
-    juego.agentes = [];
-    juego.objetos = [];
-
-    for (let i = 0; i < juego.nivel; i++) {
+function cargarAgentes() {
+    for (let i = 0; i < juego.nivel + 2; i++) {
         let posX, posY;
         do {
             posX = Math.random() * DOM.canvas.width;
             posY = Math.random() * DOM.canvas.height;
-        } while (Math.abs(posX - juego.posX) < 100 && Math.abs(posY - juego.posY) < 100);
+        } while (Math.abs(posX - juego.milei.x) < 100 && Math.abs(posY - juego.milei.y) < 100);
 
-        juego.agentes.push({ x: posX, y: posY, velocidad: config.velocidadBaseFBI + juego.nivel * 0.2 });
+        juego.agentes.push({ x: posX, y: posY });
     }
 }
 
@@ -67,50 +63,50 @@ function loopJuego() {
 
     DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
 
+    // Dibujar Milei
+    DOM.ctx.fillStyle = 'blue';
+    DOM.ctx.fillRect(juego.milei.x, juego.milei.y, 50, 50);
+
+    // Dibujar agentes
+    DOM.ctx.fillStyle = 'red';
     juego.agentes.forEach(agente => {
-        DOM.ctx.fillStyle = 'red';
         DOM.ctx.fillRect(agente.x, agente.y, 50, 50);
         moverAgente(agente);
         verificarColision(agente);
     });
 
-    DOM.ctx.fillStyle = 'blue';
-    DOM.ctx.fillRect(juego.posX, juego.posY, 50, 50);
-
     requestAnimationFrame(loopJuego);
 }
 
 function moverAgente(agente) {
-    const dx = juego.posX - agente.x;
-    const dy = juego.posY - agente.y;
+    const dx = juego.milei.x - agente.x;
+    const dy = juego.milei.y - agente.y;
     const distancia = Math.sqrt(dx * dx + dy * dy);
 
     if (distancia < config.radioDeteccion) {
-        const angulo = Math.atan2(dy, dx);
-        agente.x += Math.cos(angulo) * agente.velocidad;
-        agente.y += Math.sin(angulo) * agente.velocidad;
+        agente.x += (dx / distancia) * config.velocidadFBI;
+        agente.y += (dy / distancia) * config.velocidadFBI;
     }
 }
 
 function verificarColision(agente) {
-    if (Math.abs(juego.posX - agente.x) < 50 && Math.abs(juego.posY - agente.y) < 50) {
+    if (Math.abs(juego.milei.x - agente.x) < 50 && Math.abs(juego.milei.y - agente.y) < 50) {
         terminarJuego(false);
     }
 }
 
 function mover(direccion) {
-    const paso = 20;
-    if (direccion === 'up') juego.posY = Math.max(0, juego.posY - paso);
-    if (direccion === 'down') juego.posY = Math.min(DOM.canvas.height - 50, juego.posY + paso);
-    if (direccion === 'left') juego.posX = Math.max(0, juego.posX - paso);
-    if (direccion === 'right') juego.posX = Math.min(DOM.canvas.width - 50, juego.posX + paso);
+    const paso = config.velocidadMilei;
+    if (direccion === 'up') juego.milei.y = Math.max(0, juego.milei.y - paso);
+    if (direccion === 'down') juego.milei.y = Math.min(DOM.canvas.height - 50, juego.milei.y + paso);
+    if (direccion === 'left') juego.milei.x = Math.max(0, juego.milei.x - paso);
+    if (direccion === 'right') juego.milei.x = Math.min(DOM.canvas.width - 50, juego.milei.x + paso);
 }
 
-function terminarJuego(victoria) {
+function terminarJuego() {
     juego.activo = false;
     DOM.juego.style.display = 'none';
     DOM.fin.style.display = 'block';
-    DOM.resultado.textContent = victoria ? '¡Ganaste!' : '¡Capturado!';
 }
 
 function reiniciar() {
