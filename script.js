@@ -195,8 +195,8 @@ class GameScene extends Phaser.Scene {
     
     this.gameContainer = this.add.container(0, 0);
     
-    // Jugador: Milei (escala 0.5)
-    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
+    // Jugador: Milei (escala 0.2)
+    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.2);
     this.player.setCollideWorldBounds(true);
     this.gameContainer.add(this.player);
     
