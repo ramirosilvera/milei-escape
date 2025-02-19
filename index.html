@@ -1,44 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Milei Escape: Escándalo $LIBRA</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8">
+  <title>LIBRA Escape - La Conspiración KIP</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Se incluye Phaser 3 desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 </head>
 <body>
-    <!-- Pantalla de Inicio -->
-    <div id="pantalla-inicio">
-        <h1>🦁 Milei Escape</h1>
-        <p>¡Ayuda a Milei a escapar del FBI y destapar el complot cripto!</p>
-        <button onclick="iniciarJuego()">Comenzar</button>
-    </div>
-
-    <!-- Juego -->
-    <div id="juego">
-        <header>
-            <h2>Nivel: <span id="nivel">1</span></h2>
-            <div class="contadores">
-                <div>🔴 FBI: <span id="pistas">0</span>/10</div>
-                <div>💵 Apoyo: <span id="apoyo">100</span>%</div>
-            </div>
-        </header>
-
-        <canvas id="game-canvas"></canvas>
-
-        <div id="controles">
-            <button onclick="mover('up')">↑</button>
-            <button onclick="mover('left')">←</button>
-            <button onclick="mover('right')">→</button>
-            <button onclick="mover('down')">↓</button>
-        </div>
-    </div>
-
-    <!-- Pantalla de Fin -->
-    <div id="pantalla-fin">
-        <h1 id="resultado"></h1>
-        <button onclick="reiniciar()">Reiniciar</button>
-    </div>
+  <!-- Contenedor del juego -->
+  <div id="game-container"></div>
+  <script src="script.js"></script>
 </body>
 </html>
