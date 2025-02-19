@@ -133,18 +133,36 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Se utiliza un contenedor central (el fondo se muestra vía CSS)
+    // Contenedor central para agrupar elementos en la pantalla de inicio
     const startContainer = this.add.container(400, 300);
     
-    const titleText = this.add.text(0, -100, 'LIBRA Escape - La Conspiración KIP', {
-      fontSize: '28px',
+    // Título del juego
+    const titleText = this.add.text(0, -150, 'LIBRA Escape - La Conspiración KIP', {
+      fontSize: '32px',
       fill: '#000',
-      align: 'center'
+      align: 'center',
+      fontStyle: 'bold'
     });
     titleText.setOrigin(0.5);
     
-    const startButton = this.add.text(0, 0, 'Iniciar Juego', {
-      fontSize: '24px',
+    // Introducción y explicación del objetivo
+    const introText = "En este juego, interpretas a Javier Milei, denunciado al FBI por la difusión de la fallida cripto $LIBRA.\n" +
+                        "La presentación fue realizada por un estudio jurídico que asegura representar a 40 inversores que perdieron su dinero.\n" +
+                        "Tu objetivo es recolectar 15 documentos para exponer la conspiración en tu contra,\n" +
+                        "mientras esquivas agentes del FBI, evitas trampas y aprovechas tweets que pueden aumentar o reducir tu apoyo.\n" +
+                        "¡Gana el apoyo popular y demuestra tu inocencia!";
+    
+    const intro = this.add.text(0, -50, introText, {
+      fontSize: '20px',
+      fill: '#000',
+      align: 'center',
+      wordWrap: { width: 700 }
+    });
+    intro.setOrigin(0.5);
+    
+    // Botón para iniciar el juego
+    const startButton = this.add.text(0, 100, 'Iniciar Juego', {
+      fontSize: '26px',
       fill: '#0f0',
       backgroundColor: '#000',
       padding: { x: 20, y: 10 }
@@ -156,7 +174,8 @@ class StartScene extends Phaser.Scene {
       this.scene.start('GameScene');
     });
     
-    startContainer.add([titleText, startButton]);
+    // Se agregan los elementos al contenedor central
+    startContainer.add([titleText, intro, startButton]);
   }
 }
 
