@@ -4,12 +4,21 @@
   <meta charset="UTF-8">
   <title>LIBRA Escape - La Conspiración KIP</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Se incluye Phaser 3 desde CDN -->
+  <!-- Cargamos Phaser 3 desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 </head>
 <body>
   <!-- Contenedor del juego -->
   <div id="game-container"></div>
+  <!-- Controles táctiles: flechas -->
+  <div id="controls">
+    <button id="up" class="arrow-btn">↑</button>
+    <div id="middle-controls">
+      <button id="left" class="arrow-btn">←</button>
+      <button id="down" class="arrow-btn">↓</button>
+      <button id="right" class="arrow-btn">→</button>
+    </div>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
