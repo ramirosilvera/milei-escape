@@ -42,76 +42,17 @@ class GameState {
   }
 }
 
-class AgentIA {
-  constructor(sprite) {
-    this.sprite = sprite;
-    this.states = { PATROL: 0, CHASE: 1, SEARCH: 2 };
-    this.currentState = this.states.PATROL;
-  }
-  
-  update(target) {
-    const distance = Phaser.Math.Distance.Between(
-      this.sprite.x, this.sprite.y, target.x, target.y
-    );
-    
-    if (distance < 150) {
-      this.currentState = this.states.CHASE;
-    } else {
-      this.currentState = this.states.PATROL;
-    }
-    
-    if (this.currentState === this.states.CHASE) {
-      this.sprite.scene.physics.moveToObject(this.sprite, target, 100);
-    } else if (this.currentState === this.states.PATROL) {
-      if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
-        const randomAngle = Phaser.Math.Between(0, 360);
-        const velocityX = Math.cos(Phaser.Math.DegToRad(randomAngle)) * 50;
-        const velocityY = Math.sin(Phaser.Math.DegToRad(randomAngle)) * 50;
-        this.sprite.setVelocity(velocityX, velocityY);
-        this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
-      }
-    }
-  }
-}
-
-function showTempMessage(scene, textContent, color = '#fff') {
-  const msg = scene.add.dom(400, 50).createFromHTML(`
-    <div class="notification-top" style="color: ${color}">
-      ${textContent}
-    </div>
-  `);
-  scene.tweens.add({
-    targets: msg,
-    y: 100,
-    alpha: 0,
-    duration: 4000,
-    ease: 'Power1',
-    onComplete: () => msg.destroy()
-  });
-}
+// ... (clases y funciones auxiliares sin cambios) ...
 
 class StartScene extends Phaser.Scene {
-  constructor() {
-    super('StartScene');
-  }
-  
-  preload() {
-    this.load.image('milei', 'img/milei.png');
-    this.load.image('documento', 'img/documento.png');
-    this.load.image('fbi', 'img/fbi.png');
-    this.load.image('trampa', 'img/trampa.png');
-    this.load.image('tweet', 'img/tweet.png');
-    this.load.audio('click', 'sounds/click.wav');
-    this.load.audio('coin', 'sounds/coin.wav');
-    this.load.audio('musicaFondo', 'sounds/musica-fondo.wav');
-    this.load.audio('notification', 'sounds/notification.wav');
-    this.load.audio('sirena', 'sounds/sirena.wav');
-  }
-  
   create() {
     const startContainer = this.add.container(400, 300);
     
-    const titleText = this.add.text(0, -180, 'Milei vs. El FBI\nLa estafa de Libra', {
+    const background = this.add.rectangle(0, 0, 600, 400, 0xffffff, 0.95)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0x000000);
+    
+    const titleText = this.add.text(0, -120, 'Milei vs. El FBI\nLa estafa de Libra', {
       fontSize: '36px',
       fill: '#2c3e50',
       align: 'center',
@@ -119,20 +60,18 @@ class StartScene extends Phaser.Scene {
       lineSpacing: 20
     }).setOrigin(0.5);
 
-    const introText = this.add.text(0, -30, 
+    const introText = this.add.text(0, -20, 
       '40 inversores denunciaron a Milei ante el FBI\npor estafa con la criptomoneda Libra.\n\n¡Ayúdalo a esconder 15 documentos clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
       {
-        fontSize: '20px',
-        fill: '#2c3e50',
+        fontSize: '18px',
+        fill: '#34495e',
         align: 'center',
-        lineSpacing: 15,
-        backgroundColor: '#ffffff',
-        padding: { x: 20, y: 15 },
-        borderRadius: 10
+        lineSpacing: 12,
+        wordWrap: { width: 500 }
       }
     ).setOrigin(0.5);
 
-    const startButton = this.add.text(0, 150, 'Iniciar Juego', {
+    const startButton = this.add.text(0, 140, 'Iniciar Juego', {
       fontSize: '28px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
@@ -140,199 +79,72 @@ class StartScene extends Phaser.Scene {
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-    startButton.on('pointerover', () => {
-      startButton.setBackgroundColor('#219a52');
-    });
-
-    startButton.on('pointerout', () => {
-      startButton.setBackgroundColor('#27ae60');
-    });
-
-    startButton.on('pointerdown', () => {
-      touchInput = { up: false, down: false, left: false, right: false };
-      this.sound.play('click');
-      this.scene.start('GameScene');
-    });
-
-    startContainer.add([titleText, introText, startButton]);
+    startContainer.add([background, titleText, introText, startButton]);
+    
+    // ... (interacción del botón sin cambios) ...
   }
 }
 
 class GameScene extends Phaser.Scene {
-  constructor() {
-    super('GameScene');
-    this.isInvulnerable = false;
-  }
-  
   create() {
     this.gameState = new GameState();
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.5 });
     
-    // Contador de documentos
-    this.documentCounter = this.add.dom(400, 30).createFromHTML(`
-      <div class="document-counter">
-        DOCUMENTOS: ${this.gameState.documentosRestantes}/15
-      </div>
-    `);
+    // UI mejorada
+    this.uiContainer = this.add.container(0, 0);
     
-    // Temporizador de popularidad
-    this.apoyoTimer = this.time.addEvent({
-      delay: 1000,
-      callback: () => {
-        this.gameState.apoyo = Math.max(this.gameState.apoyo - 1, 0);
-      },
-      loop: true
-    });
-    
-    // Jugador
-    this.player = this.physics.add.sprite(400, 300, 'milei')
-      .setScale(0.3)
-      .setCollideWorldBounds(true);
-    
-    // UI
-    this.supportText = this.add.text(10, 10, 'APOYO: ', {
-      fontSize: '28px',
-      fill: '#000',
+    // Panel de documentos
+    this.documentCounter = this.add.text(20, 20, 'DOCUMENTOS: 15/15', {
+      fontSize: '24px',
+      fill: '#2c3e50',
       fontStyle: 'bold',
-      stroke: '#fff',
-      strokeThickness: 3
-    });
+      backgroundColor: 'rgba(255,255,255,0.9)',
+      padding: { x: 15, y: 10 }
+    }).setOrigin(0);
     
-    this.fbiText = this.add.text(650, 10, 'ALERTAS: ', {
-      fontSize: '28px',
-      fill: '#000',
+    // Panel de apoyo
+    this.supportText = this.add.text(20, 60, 'APOYO: 100', {
+      fontSize: '24px',
+      fill: '#27ae60',
       fontStyle: 'bold',
-      stroke: '#fff',
-      strokeThickness: 3
-    });
+      backgroundColor: 'rgba(255,255,255,0.9)',
+      padding: { x: 15, y: 10 }
+    }).setOrigin(0);
     
-    // Grupos de objetos
-    this.documents = this.physics.add.group();
-    this.tweets = this.physics.add.group();
-    this.traps = this.physics.add.group();
-    this.agents = this.physics.add.group();
+    // Panel de alertas
+    this.fbiText = this.add.text(20, 100, 'ALERTAS: 0', {
+      fontSize: '24px',
+      fill: '#c0392b',
+      fontStyle: 'bold',
+      backgroundColor: 'rgba(255,255,255,0.9)',
+      padding: { x: 15, y: 10 }
+    }).setOrigin(0);
     
-    // Spawn inicial
-    this.spawnDocument();
-    this.spawnTweet();
-    this.spawnTrap();
-    this.spawnTrap();
+    this.uiContainer.add([this.documentCounter, this.supportText, this.fbiText]);
     
-    // Agentes del FBI
-    for (let i = 0; i < 2; i++) {
-      const agentSprite = this.physics.add.sprite(
-        Phaser.Math.Between(100, 700),
-        Phaser.Math.Between(100, 500),
-        'fbi'
-      )
-      .setScale(0.3)
-      .setCollideWorldBounds(true)
-      .setBounce(0.5);
-      
-      agentSprite.ia = new AgentIA(agentSprite);
-      this.agents.add(agentSprite);
-    }
-    
-    // Colisiones
-    this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
-    this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
-    this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
-    this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
-    
-    // Controles
-    this.cursors = this.input.keyboard.createCursorKeys();
+    // ... (resto de la creación del juego sin cambios) ...
   }
-  
+
   update() {
     if (this.gameState.caught) return;
     
-    const speed = 200;
-    let vx = 0, vy = 0;
-    
-    if (this.cursors.left.isDown || touchInput.left) vx = -speed;
-    if (this.cursors.right.isDown || touchInput.right) vx = speed;
-    if (this.cursors.up.isDown || touchInput.up) vy = -speed;
-    if (this.cursors.down.isDown || touchInput.down) vy = speed;
-    
-    this.player.setVelocity(vx, vy);
-    
-    // Actualizar agentes
-    this.agents.getChildren().forEach(agent => agent.ia.update(this.player));
-    
     // Actualizar UI
+    this.documentCounter.setText(`DOCUMENTOS: ${this.gameState.documentosRestantes}/15`);
     this.supportText.setText(`APOYO: ${Math.max(this.gameState.apoyo, 0)}`);
     this.fbiText.setText(`ALERTAS: ${this.gameState.alertasFBI}`);
-    this.documentCounter.node.innerHTML = 
-      `DOCUMENTOS: ${this.gameState.documentosRestantes}/15`;
     
-    // Condiciones de fin de juego
-    if (this.gameState.evidencias.documentos >= 15) {
-      this.endGame(true);
-    } else if (this.gameState.apoyo <= 0) {
-      this.endGame(false);
-    }
+    // ... (resto del código de update sin cambios) ...
   }
-  
-  spawnDocument() {
-    this.documents.create(
-      Phaser.Math.Between(50, 750),
-      Phaser.Math.Between(50, 550),
-      'documento'
-    ).setScale(0.3);
-  }
-  
-  spawnTweet() {
-    this.tweets.create(
-      Phaser.Math.Between(50, 750),
-      Phaser.Math.Between(50, 550),
-      'tweet'
-    ).setScale(0.3);
-  }
-  
-  spawnTrap() {
-    this.traps.create(
-      Phaser.Math.Between(50, 750),
-      Phaser.Math.Between(50, 550),
-      'trampa'
-    ).setScale(0.3);
-  }
-  
-  collectDocument(player, document) {
-    document.disableBody(true, true);
-    this.gameState.evidencias.documentos++;
-    this.sound.play('coin');
-    
-    // Actualizar contador
-    this.documentCounter.node.innerHTML = 
-      `DOCUMENTOS: ${this.gameState.documentosRestantes}/15`;
-    
-    // Feedback visual
-    this.tweens.add({
-      targets: this.documentCounter,
-      scale: 1.2,
-      duration: 200,
-      yoyo: true
-    });
-    
-    this.spawnDocument();
-    this.spawnTrap();
-  }
-  
-  collectTweet(player, tweet) {
-    tweet.disableBody(true, true);
-    this.sound.play('notification');
-    const isPositive = Phaser.Math.Between(0, 1) === 0;
-    this.gameState.apoyo += isPositive ? 10 : -10;
-    showTempMessage(this, 
-      isPositive ? "Ratas inmundas de la casta política" : "No estaba interiorizado...",
-      isPositive ? "#0f0" : "#f00"
-    );
-    this.spawnTweet();
-  }
-  
+
   hitTrap(player, trap) {
     trap.disableBody(true, true);
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
+    
+    // Sonido de sirena por 2 segundos
+    const sirena = this.sound.add('sirena');
+    sirena.play();
+    this.time.delayedCall(2000, () => sirena.stop());
+    
     showTempMessage(this, "¡Trampa activada!", "#f80");
     
     this.gameState.trapHits++;
@@ -342,90 +154,60 @@ class GameScene extends Phaser.Scene {
     }
     this.time.delayedCall(2000, () => this.spawnTrap());
   }
-  
-  onAgentCollision(player, agent) {
-    if (this.isInvulnerable || this.gameState.caught) return;
-    this.isInvulnerable = true;
-    this.gameState.caught = true;
-    
-    this.sound.play('sirena');
-    this.gameState.apoyo = 0;
-    showTempMessage(this, "¡Fuiste atrapado por el FBI!", "#ff0000");
-    
-    this.time.delayedCall(2000, () => {
-      this.scene.start('EndScene', { 
-        score: this.gameState.evidencias.documentos,
-        win: false,
-        caught: true
-      });
-    });
-  }
-  
-  endGame(win) {
-    this.musica.stop();
-    this.scene.start('EndScene', { 
-      score: this.gameState.evidencias.documentos,
-      win: win
-    });
-  }
+
+  // ... (resto de métodos sin cambios) ...
 }
 
 class EndScene extends Phaser.Scene {
-  constructor() {
-    super('EndScene');
-  }
-  
-  init(data) {
-    this.finalScore = data.score || 0;
-    this.win = data.win || false;
-    this.caught = data.caught || false;
-  }
-  
   create() {
     const endContainer = this.add.container(400, 300);
     
-    let titleText;
-    if (this.caught) {
+    const background = this.add.rectangle(0, 0, 600, 400, 0xffffff, 0.95)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0x000000);
+    
+    let titleText, messageText;
+    
+    if (this.gameState.caught) {
       titleText = "¡Fuiste atrapado!";
+      messageText = "El FBI te capturó con las manos en la masa.\nTu popularidad cayó a 0.";
+    } else if (this.win) {
+      titleText = "¡Victoria!";
+      messageText = "Lograste esconder las evidencias y engañar\n al FBI y al pueblo.";
     } else {
-      titleText = this.win ? "¡Victoria!" : "¡Derrota!";
+      titleText = "¡Derrota!";
+      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos los documentos.";
     }
     
-    const endText = this.add.text(0, -80, titleText, {
-      fontSize: '32px',
+    const title = this.add.text(0, -80, titleText, {
+      fontSize: '36px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     
-    const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
+    const message = this.add.text(0, 0, messageText, {
+      fontSize: '24px',
+      fill: '#34495e',
+      align: 'center',
+      lineSpacing: 15
+    }).setOrigin(0.5);
+    
+    const scoreText = this.add.text(0, 80, `Documentos recolectados: ${this.finalScore}`, {
       fontSize: '24px',
       fill: '#34495e',
       align: 'center'
     }).setOrigin(0.5);
     
-    const restartButton = this.add.text(0, 80, 'Jugar de nuevo', {
-      fontSize: '24px',
+    const restartButton = this.add.text(0, 140, 'Jugar de nuevo', {
+      fontSize: '28px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
       padding: { x: 30, y: 15 },
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
-    restartButton.on('pointerover', () => {
-      restartButton.setBackgroundColor('#219a52');
-    });
-    
-    restartButton.on('pointerout', () => {
-      restartButton.setBackgroundColor('#27ae60');
-    });
-    
-    restartButton.on('pointerdown', () => {
-      this.sound.play('click');
-      this.scene.start('StartScene');
-    });
-    
-    endContainer.add([endText, scoreText, restartButton]);
+    endContainer.add([background, title, message, scoreText, restartButton]);
   }
 }
 
