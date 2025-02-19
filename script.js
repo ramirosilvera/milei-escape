@@ -147,10 +147,9 @@ class StartScene extends Phaser.Scene {
     
     // Introducción y explicación del objetivo
     const introText = "En este juego, interpretas a Javier Milei, denunciado al FBI por la difusión de la fallida cripto $LIBRA.\n" +
-                        "La presentación fue realizada por un estudio jurídico que asegura representar a 40 inversores que perdieron su dinero.\n" +
-                        "Tu objetivo es recolectar 15 documentos para exponer la conspiración en tu contra,\n" +
+                        "Tu objetivo es robar 15 documentos para engañar al FBI e impedir que demuestren tu culpabilidad\n" +
                         "mientras esquivas agentes del FBI, evitas trampas y aprovechas tweets que pueden aumentar o reducir tu apoyo.\n" +
-                        "¡Gana el apoyo popular y demuestra tu inocencia!";
+                        "¡Si tu apoyo llega a 0 perderás!";
     
     const intro = this.add.text(0, -50, introText, {
       fontSize: '20px',
