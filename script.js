@@ -1,4 +1,33 @@
-// Clase que mantiene el estado global del juego.
+// Objeto global para controlar la entrada táctil
+let touchInput = {
+  up: false,
+  down: false,
+  left: false,
+  right: false
+};
+
+// Una vez cargado el DOM, se asocian los botones táctiles
+document.addEventListener('DOMContentLoaded', function() {
+  const controls = document.getElementById('controls');
+  if (controls) {
+    controls.style.display = 'flex';
+    const btnUp = document.getElementById('up');
+    const btnDown = document.getElementById('down');
+    const btnLeft = document.getElementById('left');
+    const btnRight = document.getElementById('right');
+
+    btnUp.addEventListener('pointerdown', () => touchInput.up = true);
+    btnUp.addEventListener('pointerup', () => touchInput.up = false);
+    btnDown.addEventListener('pointerdown', () => touchInput.down = true);
+    btnDown.addEventListener('pointerup', () => touchInput.down = false);
+    btnLeft.addEventListener('pointerdown', () => touchInput.left = true);
+    btnLeft.addEventListener('pointerup', () => touchInput.left = false);
+    btnRight.addEventListener('pointerdown', () => touchInput.right = true);
+    btnRight.addEventListener('pointerup', () => touchInput.right = false);
+  }
+});
+
+// Estado global del juego
 class GameState {
   constructor() {
     this.nivel = 1;
@@ -13,7 +42,7 @@ class GameState {
   }
 }
 
-// Clase para la IA básica de los agentes del FBI.
+// IA básica para los agentes del FBI
 class AgentIA {
   constructor(sprite) {
     this.sprite = sprite;
@@ -26,10 +55,6 @@ class AgentIA {
   }
   
   update(target) {
-    // Lógica simple de IA:
-    // Si el agente está en estado PATROL, se mueve de forma aleatoria.
-    // Si el agente detecta al jugador (target) a cierta distancia, cambia a CHASE.
-    
     const distance = Phaser.Math.Distance.Between(
       this.sprite.x, this.sprite.y, target.x, target.y
     );
@@ -41,30 +66,29 @@ class AgentIA {
     }
     
     if (this.currentState === this.states.CHASE) {
-      // Movimiento hacia el jugador
       this.sprite.scene.physics.moveToObject(this.sprite, target, 100);
     } else if (this.currentState === this.states.PATROL) {
-      // Movimiento aleatorio (puedes ampliar con un pathfinding más complejo)
       if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
         const randomAngle = Phaser.Math.Between(0, 360);
         const velocityX = Math.cos(Phaser.Math.DegToRad(randomAngle)) * 50;
         const velocityY = Math.sin(Phaser.Math.DegToRad(randomAngle)) * 50;
         this.sprite.setVelocity(velocityX, velocityY);
-        // Cambia dirección cada 2 segundos
         this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
       }
     }
   }
 }
 
-// Escena principal del juego
-class GameScene extends Phaser.Scene {
+// ===================
+// SCENA DE INICIO
+// ===================
+class StartScene extends Phaser.Scene {
   constructor() {
-    super('GameScene');
+    super('StartScene');
   }
   
   preload() {
-    // Carga de imágenes
+    // Se cargan los assets necesarios para todo el juego
     this.load.image('fondo', 'img/fondo.jpeg');
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
@@ -72,7 +96,6 @@ class GameScene extends Phaser.Scene {
     this.load.image('moneda', 'img/moneda.png');
     this.load.image('trampa', 'img/trampa.png');
     
-    // Carga de sonidos
     this.load.audio('click', 'sounds/click.wav');
     this.load.audio('coin', 'sounds/coin.wav');
     this.load.audio('musicaFondo', 'sounds/musica-fondo.wav');
@@ -81,26 +104,59 @@ class GameScene extends Phaser.Scene {
   }
   
   create() {
-    // Agregar fondo (se centra en la mitad del canvas)
+    // Fondo y título de la pantalla de inicio
     this.add.image(400, 300, 'fondo');
     
-    // Música de fondo
-    let musica = this.sound.add('musicaFondo');
-    musica.play({ loop: true, volume: 0.5 });
+    const titleText = this.add.text(400, 150, 'LIBRA Escape - La Conspiración KIP', {
+      fontSize: '28px',
+      fill: '#fff'
+    });
+    titleText.setOrigin(0.5);
     
-    // Crear al jugador con el sprite de Milei
+    // Botón para iniciar el juego
+    const startButton = this.add.text(400, 300, 'Iniciar Juego', {
+      fontSize: '24px',
+      fill: '#0f0',
+      backgroundColor: '#000',
+      padding: { x: 10, y: 5 }
+    });
+    startButton.setOrigin(0.5);
+    startButton.setInteractive({ useHandCursor: true });
+    
+    startButton.on('pointerdown', () => {
+      this.sound.play('click');
+      this.scene.start('GameScene');
+    });
+  }
+}
+
+// ===================
+// SCENA DEL JUEGO
+// ===================
+class GameScene extends Phaser.Scene {
+  constructor() {
+    super('GameScene');
+  }
+  
+  create() {
+    // Inicializa el estado del juego
+    this.gameState = new GameState();
+    
+    // Fondo y música
+    this.add.image(400, 300, 'fondo');
+    this.musica = this.sound.add('musicaFondo');
+    this.musica.play({ loop: true, volume: 0.5 });
+    
+    // Jugador
     this.player = this.physics.add.sprite(400, 300, 'milei');
     this.player.setCollideWorldBounds(true);
     
-    // Inicializar controles del teclado
+    // Controles de teclado
     this.cursors = this.input.keyboard.createCursorKeys();
-    
-    // Inicializar el estado global del juego
-    this.gameState = new GameState();
     
     // Grupo de documentos (coleccionables)
     this.documents = this.physics.add.group();
-    let documento = this.documents.create(200, 200, 'documento');
+    this.documents.create(200, 200, 'documento');
     
     // Grupo de agentes del FBI
     this.agents = this.physics.add.group();
@@ -112,64 +168,115 @@ class GameScene extends Phaser.Scene {
       this.agents.add(agentSprite);
     }
     
-    // Colisiones e interacciones
+    // Detección de colisiones e interacciones
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
-    
-    // (Opcional) Podrías agregar más grupos de coleccionables, trampas, monedas, etc.
   }
   
   update() {
-    // Movimiento del jugador en 8 direcciones
-    let speed = 200;
-    this.player.setVelocity(0);
+    const speed = 200;
+    let vx = 0, vy = 0;
     
+    // Entrada por teclado
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-speed);
-    }
-    if (this.cursors.right.isDown) {
-      this.player.setVelocityX(speed);
+      vx = -speed;
+    } else if (this.cursors.right.isDown) {
+      vx = speed;
     }
     if (this.cursors.up.isDown) {
-      this.player.setVelocityY(-speed);
-    }
-    if (this.cursors.down.isDown) {
-      this.player.setVelocityY(speed);
+      vy = -speed;
+    } else if (this.cursors.down.isDown) {
+      vy = speed;
     }
     
-    // Actualizar la IA de cada agente
+    // Entrada táctil (flechas en pantalla)
+    if (touchInput.left) {
+      vx = -speed;
+    } else if (touchInput.right) {
+      vx = speed;
+    }
+    if (touchInput.up) {
+      vy = -speed;
+    } else if (touchInput.down) {
+      vy = speed;
+    }
+    
+    this.player.setVelocity(vx, vy);
+    
+    // Actualiza la IA de los agentes
     this.agents.children.iterate((agent) => {
       if (agent.ia) {
         agent.ia.update(this.player);
       }
     });
     
-    // Aquí se pueden incluir otros elementos del update:
-    // - Gestión de la barra de apoyo político
-    // - Verificación de colisiones con trampas
-    // - Eventos narrativos (cambio de niveles, mini-juegos, etc.)
+    // Condición de fin de juego (por ejemplo, cuando el apoyo llega a 0)
+    if (this.gameState.apoyo <= 0) {
+      this.musica.stop();
+      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos });
+    }
   }
   
-  // Función al recoger un documento
   collectDocument(player, document) {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos += 1;
     this.sound.play('coin');
-    
-    // Aquí podrías agregar efectos visuales (p. ej., un tween que simule un glitch)
   }
   
-  // Función al chocar con un agente del FBI
   onAgentCollision(player, agent) {
     this.sound.play('sirena');
-    // Reducir apoyo político, aumentar alertas, etc.
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-    
-    // Mostrar feedback visual o notificación en pantalla
   }
 }
 
-// Configuración del juego utilizando Phaser
+// ===================
+// SCENA DE FIN
+// ===================
+class EndScene extends Phaser.Scene {
+  constructor() {
+    super('EndScene');
+  }
+  
+  init(data) {
+    this.finalScore = data.score || 0;
+  }
+  
+  create() {
+    // Fondo y textos finales
+    this.add.image(400, 300, 'fondo');
+    
+    const endText = this.add.text(400, 200, 'Juego Terminado', {
+      fontSize: '32px',
+      fill: '#fff'
+    });
+    endText.setOrigin(0.5);
+    
+    const scoreText = this.add.text(400, 260, `Documentos recolectados: ${this.finalScore}`, {
+      fontSize: '24px',
+      fill: '#fff'
+    });
+    scoreText.setOrigin(0.5);
+    
+    // Botón para reiniciar
+    const restartButton = this.add.text(400, 350, 'Reiniciar Juego', {
+      fontSize: '24px',
+      fill: '#0f0',
+      backgroundColor: '#000',
+      padding: { x: 10, y: 5 }
+    });
+    restartButton.setOrigin(0.5);
+    restartButton.setInteractive({ useHandCursor: true });
+    
+    restartButton.on('pointerdown', () => {
+      this.sound.play('click');
+      this.scene.start('StartScene');
+    });
+  }
+}
+
+// ===================
+// CONFIGURACIÓN DE PHASER
+// ===================
 const config = {
   type: Phaser.AUTO,
   width: 800,
@@ -177,12 +284,9 @@ const config = {
   parent: 'game-container',
   physics: {
     default: 'arcade',
-    arcade: {
-      debug: false
-    }
+    arcade: { debug: false }
   },
-  scene: GameScene
+  scene: [StartScene, GameScene, EndScene]
 };
 
-// Inicialización del juego
 const game = new Phaser.Game(config);
