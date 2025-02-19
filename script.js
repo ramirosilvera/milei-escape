@@ -30,14 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
 class GameState {
   constructor() {
     this.nivel = 1;
+    this.totalDocumentos = 15;
     this.evidencias = {
       documentos: 0,
-      codigos: 0,
-      grabaciones: 0
     };
     this.alertasFBI = 0;
     this.apoyo = 100;
     this.trapHits = 0;
+  }
+  
+  get documentosRestantes() {
+    return this.totalDocumentos - this.evidencias.documentos;
   }
 }
 
@@ -49,7 +52,9 @@ class AgentIA {
   }
   
   update(target) {
-    const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, target.x, target.y);
+    const distance = Phaser.Math.Distance.Between(
+      this.sprite.x, this.sprite.y, target.x, target.y
+    );
     
     if (distance < 150) {
       this.currentState = this.states.CHASE;
@@ -72,17 +77,16 @@ class AgentIA {
 }
 
 function showTempMessage(scene, textContent, color = '#fff') {
-  const msg = scene.add.text(400, 550, textContent, {
-    fontSize: '20px',
-    fill: color,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    padding: { x: 10, y: 5 }
-  });
-  msg.setOrigin(0.5);
+  const msg = scene.add.dom(400, 50).createFromHTML(`
+    <div class="notification-top" style="color: ${color}">
+      ${textContent}
+    </div>
+  `);
   scene.tweens.add({
     targets: msg,
+    y: 100,
     alpha: 0,
-    duration: 6000,
+    duration: 4000,
     ease: 'Power1',
     onComplete: () => msg.destroy()
   });
@@ -109,13 +113,29 @@ class StartScene extends Phaser.Scene {
   
   create() {
     const startContainer = this.add.container(400, 300);
-    const titleText = this.add.text(0, -100, 'Milei vs. El FBI: La estafa de Libra', {
-      fontSize: '28px',
+    
+    // Texto del título
+    const titleText = this.add.text(0, -150, 'Milei vs. El FBI\nLa estafa de Libra', {
+      fontSize: '32px',
       fill: '#000',
-      align: 'center'
+      align: 'center',
+      fontStyle: 'bold',
+      lineSpacing: 15
     }).setOrigin(0.5);
     
-    const startButton = this.add.text(0, 0, 'Iniciar Juego', {
+    // Texto de introducción actualizado
+    const introText = this.add.text(0, -50, 
+      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la criptomoneda Libra.\n\n¡Ayúdalo a esconder 15 documentos clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
+      {
+        fontSize: '18px',
+        fill: '#444',
+        align: 'center',
+        lineSpacing: 12
+      }
+    ).setOrigin(0.5);
+    
+    // Botón de inicio
+    const startButton = this.add.text(0, 100, 'Iniciar Juego', {
       fontSize: '24px',
       fill: '#0f0',
       backgroundColor: '#000',
@@ -128,7 +148,7 @@ class StartScene extends Phaser.Scene {
       this.scene.start('GameScene');
     });
     
-    startContainer.add([titleText, startButton]);
+    startContainer.add([titleText, introText, startButton]);
   }
 }
 
@@ -141,12 +161,28 @@ class GameScene extends Phaser.Scene {
   create() {
     this.gameState = new GameState();
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.5 });
-    this.gameContainer = this.add.container(0, 0);
     
+    // Contador de documentos
+    this.documentCounter = this.add.dom(400, 30).createFromHTML(`
+      <div class="document-counter">
+        DOCUMENTOS: ${this.gameState.documentosRestantes}/15
+      </div>
+    `);
+    
+    // Temporizador de popularidad
+    this.apoyoTimer = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.gameState.apoyo = Math.max(this.gameState.apoyo - 1, 0);
+      },
+      loop: true
+    });
+    
+    // Creación del jugador
     this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.3).setCollideWorldBounds(true);
-    this.gameContainer.add(this.player);
     
-    this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
+    // UI
+    this.supportText = this.add.text(10, 10, 'APOYO: ', {
       fontSize: '28px',
       fill: '#000',
       fontStyle: 'bold',
@@ -154,7 +190,7 @@ class GameScene extends Phaser.Scene {
       strokeThickness: 3
     });
     
-    this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
+    this.fbiText = this.add.text(650, 10, 'ALERTAS: ', {
       fontSize: '28px',
       fill: '#000',
       fontStyle: 'bold',
@@ -162,16 +198,19 @@ class GameScene extends Phaser.Scene {
       strokeThickness: 3
     });
     
+    // Grupos de objetos
     this.documents = this.physics.add.group();
     this.tweets = this.physics.add.group();
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
     
+    // Spawn inicial
     this.spawnDocument();
     this.spawnTweet();
     this.spawnTrap();
     this.spawnTrap();
     
+    // Creación de agentes
     for (let i = 0; i < 2; i++) {
       let agentSprite = this.physics.add.sprite(
         Phaser.Math.Between(100, 700),
@@ -182,10 +221,13 @@ class GameScene extends Phaser.Scene {
       this.agents.add(agentSprite);
     }
     
+    // Colisiones
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
     this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
+    
+    // Controles
     this.cursors = this.input.keyboard.createCursorKeys();
   }
   
@@ -200,24 +242,21 @@ class GameScene extends Phaser.Scene {
     
     this.player.setVelocity(vx, vy);
     
+    // Actualizar agentes
     this.agents.getChildren().forEach(agent => agent.ia.update(this.player));
     
-    this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
-    this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
+    // Actualizar UI
+    this.supportText.setText(`APOYO: ${Math.max(this.gameState.apoyo, 0)}`);
+    this.fbiText.setText(`ALERTAS: ${this.gameState.alertasFBI}`);
+    this.documentCounter.node.innerHTML = 
+      `DOCUMENTOS: ${this.gameState.documentosRestantes}/15`;
     
+    // Condiciones de fin de juego
     if (this.gameState.evidencias.documentos >= 15) {
       this.endGame(true);
     } else if (this.gameState.apoyo <= 0) {
       this.endGame(false);
     }
-  }
-  
-  endGame(win) {
-    this.musica.stop();
-    this.scene.start('EndScene', { 
-      score: this.gameState.evidencias.documentos,
-      win: win
-    });
   }
   
   spawnDocument() {
@@ -248,6 +287,19 @@ class GameScene extends Phaser.Scene {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos++;
     this.sound.play('coin');
+    
+    // Actualizar contador
+    this.documentCounter.node.innerHTML = 
+      `DOCUMENTOS: ${this.gameState.documentosRestantes}/15`;
+    
+    // Feedback visual
+    this.tweens.add({
+      targets: this.documentCounter,
+      scale: 1.2,
+      duration: 200,
+      yoyo: true
+    });
+    
     this.spawnDocument();
     this.spawnTrap();
   }
@@ -289,6 +341,14 @@ class GameScene extends Phaser.Scene {
       this.isInvulnerable = false;
     });
   }
+  
+  endGame(win) {
+    this.musica.stop();
+    this.scene.start('EndScene', { 
+      score: this.gameState.evidencias.documentos,
+      win: win
+    });
+  }
 }
 
 class EndScene extends Phaser.Scene {
@@ -311,13 +371,13 @@ class EndScene extends Phaser.Scene {
       align: 'center'
     }).setOrigin(0.5);
     
-    const scoreText = this.add.text(0, 0, `Documentos: ${this.finalScore}`, {
+    const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
       fontSize: '24px',
       fill: '#000',
       align: 'center'
     }).setOrigin(0.5);
     
-    const restartButton = this.add.text(0, 80, 'Reiniciar', {
+    const restartButton = this.add.text(0, 80, 'Reiniciar Juego', {
       fontSize: '24px',
       fill: '#0f0',
       backgroundColor: '#000',
