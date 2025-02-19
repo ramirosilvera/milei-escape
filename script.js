@@ -1,4 +1,4 @@
-// Objeto global para la entrada táctil
+// Objeto global para entrada táctil
 let touchInput = {
   up: false,
   down: false,
@@ -9,27 +9,31 @@ let touchInput = {
 document.addEventListener('DOMContentLoaded', function() {
   const controls = document.getElementById('controls');
   if (controls) {
-    // Aseguramos que los botones respondan a pointer events
     const btnUp = document.getElementById('up');
     const btnDown = document.getElementById('down');
     const btnLeft = document.getElementById('left');
     const btnRight = document.getElementById('right');
 
-    btnUp.addEventListener('pointerdown', () => touchInput.up = true);
-    btnUp.addEventListener('pointerup', () => touchInput.up = false);
-    btnUp.addEventListener('pointerout', () => touchInput.up = false);
-
-    btnDown.addEventListener('pointerdown', () => touchInput.down = true);
-    btnDown.addEventListener('pointerup', () => touchInput.down = false);
-    btnDown.addEventListener('pointerout', () => touchInput.down = false);
-
-    btnLeft.addEventListener('pointerdown', () => touchInput.left = true);
-    btnLeft.addEventListener('pointerup', () => touchInput.left = false);
-    btnLeft.addEventListener('pointerout', () => touchInput.left = false);
-
-    btnRight.addEventListener('pointerdown', () => touchInput.right = true);
-    btnRight.addEventListener('pointerup', () => touchInput.right = false);
-    btnRight.addEventListener('pointerout', () => touchInput.right = false);
+    [btnUp, btnDown, btnLeft, btnRight].forEach(btn => {
+      btn.addEventListener('pointerdown', () => {
+        if(btn.id === 'up') touchInput.up = true;
+        if(btn.id === 'down') touchInput.down = true;
+        if(btn.id === 'left') touchInput.left = true;
+        if(btn.id === 'right') touchInput.right = true;
+      });
+      btn.addEventListener('pointerup', () => {
+        if(btn.id === 'up') touchInput.up = false;
+        if(btn.id === 'down') touchInput.down = false;
+        if(btn.id === 'left') touchInput.left = false;
+        if(btn.id === 'right') touchInput.right = false;
+      });
+      btn.addEventListener('pointerout', () => {
+        if(btn.id === 'up') touchInput.up = false;
+        if(btn.id === 'down') touchInput.down = false;
+        if(btn.id === 'left') touchInput.left = false;
+        if(btn.id === 'right') touchInput.right = false;
+      });
+    });
   }
 });
 
@@ -48,7 +52,7 @@ class GameState {
   }
 }
 
-// IA básica para los agentes del FBI
+// IA básica para agentes del FBI (ahora con sprite reducido)
 class AgentIA {
   constructor(sprite) {
     this.sprite = sprite;
@@ -85,6 +89,24 @@ class AgentIA {
   }
 }
 
+// Función para mostrar mensajes temporales (por ejemplo, de tweets)
+function showTempMessage(scene, textContent, color = '#fff') {
+  const msg = scene.add.text(400, 550, textContent, {
+    fontSize: '20px',
+    fill: color,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: { x: 10, y: 5 }
+  });
+  msg.setOrigin(0.5);
+  scene.tweens.add({
+    targets: msg,
+    alpha: 0,
+    duration: 2000,
+    ease: 'Power1',
+    onComplete: () => { msg.destroy(); }
+  });
+}
+
 // ===================
 // SCENA DE INICIO
 // ===================
@@ -94,13 +116,14 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Carga de assets
+    // Carga de imágenes y sonidos para todo el juego
     this.load.image('fondo', 'img/fondo.jpeg');
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
     this.load.image('moneda', 'img/moneda.png');
     this.load.image('trampa', 'img/trampa.png');
+    this.load.image('tweet', 'img/tweet.png');
     
     this.load.audio('click', 'sounds/click.wav');
     this.load.audio('coin', 'sounds/coin.wav');
@@ -110,10 +133,8 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Fondo
+    // Fondo escalado y contenedor central
     this.add.image(400, 300, 'fondo').setScale(0.8);
-    
-    // Contenedor de elementos de la pantalla de inicio
     const startContainer = this.add.container(400, 300);
     
     // Título
@@ -133,7 +154,6 @@ class StartScene extends Phaser.Scene {
     });
     startButton.setOrigin(0.5);
     startButton.setInteractive({ useHandCursor: true });
-    
     startButton.on('pointerdown', () => {
       this.sound.play('click');
       this.scene.start('GameScene');
@@ -152,54 +172,60 @@ class GameScene extends Phaser.Scene {
   }
   
   create() {
-    // Estado del juego
+    // Estado inicial del juego
     this.gameState = new GameState();
-    
-    // Fondo
+    // Fondo escalado
     this.add.image(400, 300, 'fondo').setScale(0.8);
     
     // Música de fondo
     this.musica = this.sound.add('musicaFondo');
     this.musica.play({ loop: true, volume: 0.5 });
     
-    // Contenedor para objetos del juego
+    // Contenedor general (para organizar elementos)
     this.gameContainer = this.add.container(0, 0);
     
-    // Jugador (con tamaño reducido y en contenedor)
+    // Jugador: Milei (tamaño reducido)  
     this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
     this.player.setCollideWorldBounds(true);
     this.gameContainer.add(this.player);
     
-    // UI: Visor de apoyo popular (arriba a la izquierda)
+    // UI: Visor de Apoyo y alertas FBI
     this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
       fontSize: '18px',
       fill: '#fff'
     });
-    this.supportText.setScrollFactor(0);
-    
-    // UI: Indicador de alertas FBI (arriba a la derecha)
     this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
       fontSize: '18px',
       fill: '#fff'
     });
-    this.fbiText.setScrollFactor(0);
     
-    // Documentos (coleccionable) en un contenedor
+    // Grupo de documentos (coleccionables)
     this.documents = this.physics.add.group();
-    let doc = this.documents.create(200, 200, 'documento').setScale(0.5);
+    this.spawnDocument();
     
-    // Agentes del FBI
+    // Grupo de tweets
+    this.tweets = this.physics.add.group();
+    this.spawnTweet();
+    
+    // Grupo de trampas (hazard)
+    this.traps = this.physics.add.group();
+    this.spawnTrap();
+    this.spawnTrap(); // Se crean dos trampas al inicio
+    
+    // Grupo de agentes del FBI (ahora más pequeños)
     this.agents = this.physics.add.group();
     for (let i = 0; i < 3; i++) {
       let x = Phaser.Math.Between(100, 700);
       let y = Phaser.Math.Between(100, 500);
-      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.5);
+      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.4);
       agentSprite.ia = new AgentIA(agentSprite);
       this.agents.add(agentSprite);
     }
     
-    // Colisiones e interacciones
+    // Detección de colisiones e interacciones
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
+    this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
+    this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
     
     // Controles por teclado
@@ -222,7 +248,7 @@ class GameScene extends Phaser.Scene {
       vy = speed;
     }
     
-    // Entrada táctil (botones en pantalla)
+    // Entrada táctil
     if (touchInput.left) {
       vx = -speed;
     } else if (touchInput.right) {
@@ -236,30 +262,87 @@ class GameScene extends Phaser.Scene {
     
     this.player.setVelocity(vx, vy);
     
-    // Actualiza IA de cada agente
+    // Actualiza la IA de los agentes
     this.agents.children.iterate((agent) => {
       if (agent.ia) {
         agent.ia.update(this.player);
       }
     });
     
-    // Actualiza el visor de apoyo y alertas FBI
+    // Actualiza la UI
     this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
     this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
     
-    // Condición de fin de juego (apoyo se agota)
-    if (this.gameState.apoyo <= 0) {
+    // Objetivo difícil: ganar si se recolectan 15 documentos antes de que el apoyo se agote
+    if (this.gameState.evidencias.documentos >= 15) {
       this.musica.stop();
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos });
+      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: true });
+    } else if (this.gameState.apoyo <= 0) {
+      this.musica.stop();
+      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false });
     }
   }
   
+  // Función para generar un documento en una posición aleatoria
+  spawnDocument() {
+    const x = Phaser.Math.Between(50, 750);
+    const y = Phaser.Math.Between(50, 550);
+    this.documents.create(x, y, 'documento').setScale(0.5);
+  }
+  
+  // Función para generar un tweet
+  spawnTweet() {
+    const x = Phaser.Math.Between(50, 750);
+    const y = Phaser.Math.Between(50, 550);
+    this.tweets.create(x, y, 'tweet').setScale(0.4);
+  }
+  
+  // Función para generar una trampa
+  spawnTrap() {
+    const x = Phaser.Math.Between(50, 750);
+    const y = Phaser.Math.Between(50, 550);
+    this.traps.create(x, y, 'trampa').setScale(0.4);
+  }
+  
+  // Al recoger un documento
   collectDocument(player, document) {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos += 1;
     this.sound.play('coin');
+    // Re-spawnea un nuevo documento
+    this.spawnDocument();
+    // Además, cada vez que se recoge un documento, se genera una nueva trampa
+    this.spawnTrap();
   }
   
+  // Al recoger un tweet
+  collectTweet(player, tweet) {
+    tweet.disableBody(true, true);
+    this.sound.play('notification');
+    // 50% de probabilidad de ser tweet positivo o negativo
+    const isPositive = Phaser.Math.Between(0, 1) === 0;
+    if (isPositive) {
+      this.gameState.apoyo += 10;
+      showTempMessage(this, "Ratas inmundas de la casta política", "#0f0");
+    } else {
+      this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
+      showTempMessage(this, "No estaba interiorizado de los pormenores del proyecto", "#f00");
+    }
+    // Re-spawnea un nuevo tweet
+    this.spawnTweet();
+  }
+  
+  // Al chocar con una trampa
+  hitTrap(player, trap) {
+    trap.disableBody(true, true);
+    // La trampa reduce el apoyo en 5
+    this.gameState.apoyo = Math.max(this.gameState.apoyo - 5, 0);
+    showTempMessage(this, "¡Trampa activada!", "#f80");
+    // Re-spawnea la trampa después de 2 segundos
+    this.time.delayedCall(2000, () => { this.spawnTrap(); });
+  }
+  
+  // Al chocar con un agente del FBI
   onAgentCollision(player, agent) {
     this.sound.play('sirena');
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
@@ -277,15 +360,15 @@ class EndScene extends Phaser.Scene {
   
   init(data) {
     this.finalScore = data.score || 0;
+    this.win = data.win || false;
   }
   
   create() {
     this.add.image(400, 300, 'fondo').setScale(0.8);
-    
-    // Contenedor para la pantalla final
     const endContainer = this.add.container(400, 300);
     
-    const endText = this.add.text(0, -80, 'Juego Terminado', {
+    const title = this.win ? "¡Ganaste!" : "Juego Terminado";
+    const endText = this.add.text(0, -80, title, {
       fontSize: '32px',
       fill: '#fff',
       align: 'center'
@@ -307,7 +390,6 @@ class EndScene extends Phaser.Scene {
     });
     restartButton.setOrigin(0.5);
     restartButton.setInteractive({ useHandCursor: true });
-    
     restartButton.on('pointerdown', () => {
       this.sound.play('click');
       this.scene.start('StartScene');
