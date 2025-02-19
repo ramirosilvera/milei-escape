@@ -334,7 +334,7 @@ class GameScene extends Phaser.Scene {
     const isPositive = Phaser.Math.Between(0, 1) === 0;
     this.gameState.apoyo += isPositive ? 10 : -10;
     showTempMessage(this, 
-      isPositive ? "¡La casta política nos quiere frenar!" : "¡Fake news en redes sociales!",
+      isPositive ? "¡Ratas inmundas de la casta política!" : "¡No estaba interiorizado...!",
       isPositive ? "#0f0" : "#f00"
     );
     this.spawnTweet();
