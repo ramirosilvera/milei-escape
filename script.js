@@ -16,22 +16,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     [btnUp, btnDown, btnLeft, btnRight].forEach(btn => {
       btn.addEventListener('pointerdown', () => {
-        if(btn.id === 'up') touchInput.up = true;
-        if(btn.id === 'down') touchInput.down = true;
-        if(btn.id === 'left') touchInput.left = true;
-        if(btn.id === 'right') touchInput.right = true;
+        if (btn.id === 'up') touchInput.up = true;
+        if (btn.id === 'down') touchInput.down = true;
+        if (btn.id === 'left') touchInput.left = true;
+        if (btn.id === 'right') touchInput.right = true;
       });
       btn.addEventListener('pointerup', () => {
-        if(btn.id === 'up') touchInput.up = false;
-        if(btn.id === 'down') touchInput.down = false;
-        if(btn.id === 'left') touchInput.left = false;
-        if(btn.id === 'right') touchInput.right = false;
+        if (btn.id === 'up') touchInput.up = false;
+        if (btn.id === 'down') touchInput.down = false;
+        if (btn.id === 'left') touchInput.left = false;
+        if (btn.id === 'right') touchInput.right = false;
       });
       btn.addEventListener('pointerout', () => {
-        if(btn.id === 'up') touchInput.up = false;
-        if(btn.id === 'down') touchInput.down = false;
-        if(btn.id === 'left') touchInput.left = false;
-        if(btn.id === 'right') touchInput.right = false;
+        if (btn.id === 'up') touchInput.up = false;
+        if (btn.id === 'down') touchInput.down = false;
+        if (btn.id === 'left') touchInput.left = false;
+        if (btn.id === 'right') touchInput.right = false;
       });
     });
   }
@@ -52,7 +52,7 @@ class GameState {
   }
 }
 
-// IA básica para agentes del FBI (ahora con sprite reducido)
+// IA básica para agentes del FBI (sprite reducido)
 class AgentIA {
   constructor(sprite) {
     this.sprite = sprite;
@@ -101,7 +101,7 @@ function showTempMessage(scene, textContent, color = '#fff') {
   scene.tweens.add({
     targets: msg,
     alpha: 0,
-    duration: 2000,
+    duration: 4000, // Duración aumentada a 4000 ms
     ease: 'Power1',
     onComplete: () => { msg.destroy(); }
   });
@@ -116,8 +116,7 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Carga de imágenes y sonidos para todo el juego
-    this.load.image('fondo', 'img/fondo.jpeg');
+    // Carga de assets
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
@@ -133,19 +132,16 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Fondo escalado y contenedor central
-    this.add.image(400, 300, 'fondo').setScale(0.8);
+    // No se dibuja fondo desde Phaser (se usa CSS)
     const startContainer = this.add.container(400, 300);
     
-    // Título
     const titleText = this.add.text(0, -100, 'LIBRA Escape - La Conspiración KIP', {
       fontSize: '28px',
-      fill: '#fff',
+      fill: '#000',
       align: 'center'
     });
     titleText.setOrigin(0.5);
     
-    // Botón de inicio
     const startButton = this.add.text(0, 0, 'Iniciar Juego', {
       fontSize: '24px',
       fill: '#0f0',
@@ -172,57 +168,53 @@ class GameScene extends Phaser.Scene {
   }
   
   create() {
-    // Estado inicial del juego
     this.gameState = new GameState();
-    // Fondo escalado
-    this.add.image(400, 300, 'fondo').setScale(0.8);
     
-    // Música de fondo
+    // No se agrega fondo en Phaser; el fondo es vía CSS
     this.musica = this.sound.add('musicaFondo');
     this.musica.play({ loop: true, volume: 0.5 });
     
-    // Contenedor general (para organizar elementos)
     this.gameContainer = this.add.container(0, 0);
     
-    // Jugador: Milei (tamaño reducido)  
-    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
+    // Jugador: Milei (escala 0.6)
+    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.6);
     this.player.setCollideWorldBounds(true);
     this.gameContainer.add(this.player);
     
     // UI: Visor de Apoyo y alertas FBI
     this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
       fontSize: '18px',
-      fill: '#fff'
+      fill: '#000'
     });
     this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
       fontSize: '18px',
-      fill: '#fff'
+      fill: '#000'
     });
     
-    // Grupo de documentos (coleccionables)
+    // Grupo de documentos (coleccionable, escala 0.5)
     this.documents = this.physics.add.group();
     this.spawnDocument();
     
-    // Grupo de tweets
+    // Grupo de tweets (escala 0.5)
     this.tweets = this.physics.add.group();
     this.spawnTweet();
     
-    // Grupo de trampas (hazard)
+    // Grupo de trampas (escala 0.5)
     this.traps = this.physics.add.group();
     this.spawnTrap();
-    this.spawnTrap(); // Se crean dos trampas al inicio
+    this.spawnTrap();
     
-    // Grupo de agentes del FBI (ahora más pequeños)
+    // Grupo de agentes del FBI (2 agentes, escala 0.3)
     this.agents = this.physics.add.group();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
       let x = Phaser.Math.Between(100, 700);
       let y = Phaser.Math.Between(100, 500);
-      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.4);
+      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.3);
       agentSprite.ia = new AgentIA(agentSprite);
       this.agents.add(agentSprite);
     }
     
-    // Detección de colisiones e interacciones
+    // Colisiones e interacciones
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
     this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
@@ -236,7 +228,6 @@ class GameScene extends Phaser.Scene {
     const speed = 200;
     let vx = 0, vy = 0;
     
-    // Entrada por teclado
     if (this.cursors.left.isDown) {
       vx = -speed;
     } else if (this.cursors.right.isDown) {
@@ -248,7 +239,6 @@ class GameScene extends Phaser.Scene {
       vy = speed;
     }
     
-    // Entrada táctil
     if (touchInput.left) {
       vx = -speed;
     } else if (touchInput.right) {
@@ -262,18 +252,16 @@ class GameScene extends Phaser.Scene {
     
     this.player.setVelocity(vx, vy);
     
-    // Actualiza la IA de los agentes
     this.agents.children.iterate((agent) => {
       if (agent.ia) {
         agent.ia.update(this.player);
       }
     });
     
-    // Actualiza la UI
     this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
     this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
     
-    // Objetivo difícil: ganar si se recolectan 15 documentos antes de que el apoyo se agote
+    // Objetivo: 15 documentos recolectados antes de agotar el apoyo
     if (this.gameState.evidencias.documentos >= 15) {
       this.musica.stop();
       this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: true });
@@ -283,43 +271,36 @@ class GameScene extends Phaser.Scene {
     }
   }
   
-  // Función para generar un documento en una posición aleatoria
   spawnDocument() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
     this.documents.create(x, y, 'documento').setScale(0.5);
   }
   
-  // Función para generar un tweet
   spawnTweet() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
-    this.tweets.create(x, y, 'tweet').setScale(0.4);
+    this.tweets.create(x, y, 'tweet').setScale(0.5);
   }
   
-  // Función para generar una trampa
   spawnTrap() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
-    this.traps.create(x, y, 'trampa').setScale(0.4);
+    this.traps.create(x, y, 'trampa').setScale(0.5);
   }
   
-  // Al recoger un documento
   collectDocument(player, document) {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos += 1;
     this.sound.play('coin');
-    // Re-spawnea un nuevo documento
+    // Re-spawnea un documento y una trampa cada vez que se recoge uno
     this.spawnDocument();
-    // Además, cada vez que se recoge un documento, se genera una nueva trampa
     this.spawnTrap();
   }
   
-  // Al recoger un tweet
   collectTweet(player, tweet) {
     tweet.disableBody(true, true);
     this.sound.play('notification');
-    // 50% de probabilidad de ser tweet positivo o negativo
     const isPositive = Phaser.Math.Between(0, 1) === 0;
     if (isPositive) {
       this.gameState.apoyo += 10;
@@ -328,21 +309,16 @@ class GameScene extends Phaser.Scene {
       this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
       showTempMessage(this, "No estaba interiorizado de los pormenores del proyecto", "#f00");
     }
-    // Re-spawnea un nuevo tweet
     this.spawnTweet();
   }
   
-  // Al chocar con una trampa
   hitTrap(player, trap) {
     trap.disableBody(true, true);
-    // La trampa reduce el apoyo en 5
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 5, 0);
     showTempMessage(this, "¡Trampa activada!", "#f80");
-    // Re-spawnea la trampa después de 2 segundos
     this.time.delayedCall(2000, () => { this.spawnTrap(); });
   }
   
-  // Al chocar con un agente del FBI
   onAgentCollision(player, agent) {
     this.sound.play('sirena');
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
@@ -364,20 +340,19 @@ class EndScene extends Phaser.Scene {
   }
   
   create() {
-    this.add.image(400, 300, 'fondo').setScale(0.8);
     const endContainer = this.add.container(400, 300);
     
     const title = this.win ? "¡Ganaste!" : "Juego Terminado";
     const endText = this.add.text(0, -80, title, {
       fontSize: '32px',
-      fill: '#fff',
+      fill: '#000',
       align: 'center'
     });
     endText.setOrigin(0.5);
     
     const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
       fontSize: '24px',
-      fill: '#fff',
+      fill: '#000',
       align: 'center'
     });
     scoreText.setOrigin(0.5);
@@ -407,6 +382,7 @@ const config = {
   width: 800,
   height: 600,
   parent: 'game-container',
+  backgroundColor: '#fff', // Canvas blanco
   physics: {
     default: 'arcade',
     arcade: { debug: false }
