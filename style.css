@@ -1,29 +1,59 @@
-/* Reset básico y fondo */
+/* Reset básico y configuración global */
+* {
+  box-sizing: border-box;
+}
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #000;
-  overflow: hidden;
-  font-family: sans-serif;
+  background-color: #111;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Contenedor principal del juego */
 #game-container {
-  width: 100vw;
-  height: 100vh;
+  width: 800px;
+  height: 600px;
+  background: #000;
   position: relative;
 }
 
-/* Ejemplo de estilo para un panel lateral (futuro) */
-#sidebar {
+/* Controles táctiles (flechas) */
+#controls {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 20%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  color: #fff;
-  padding: 10px;
-  box-sizing: border-box;
-  font-size: 14px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Se puede ocultar en desktop si se desea */
+}
+
+#middle-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.arrow-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 5px;
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  font-size: 24px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Opcional: en pantallas grandes se pueden ocultar estos botones */
+@media (min-width: 800px) {
+  #controls {
+    display: none;
+  }
 }
