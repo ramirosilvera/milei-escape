@@ -137,7 +137,7 @@ class StartScene extends Phaser.Scene {
     const startContainer = this.add.container(400, 300);
     
     // Título del juego
-    const titleText = this.add.text(0, -150, 'LIBRA Escape - La Conspiración KIP', {
+    const titleText = this.add.text(0, -150, 'Milei vs. El FBI: La estafa de Libra', {
       fontSize: '32px',
       fill: '#000',
       align: 'center',
