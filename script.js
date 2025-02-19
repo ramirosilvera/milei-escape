@@ -1,4 +1,4 @@
-// Objeto global para entrada táctil
+// Objeto global para la entrada táctil
 let touchInput = {
   up: false,
   down: false,
@@ -48,7 +48,8 @@ class GameState {
     };
     this.alertasFBI = 0;
     this.apoyo = 100;
-    this.trampasActivas = [];
+    // Contador para impactos de trampas
+    this.trapHits = 0;
   }
 }
 
@@ -101,7 +102,7 @@ function showTempMessage(scene, textContent, color = '#fff') {
   scene.tweens.add({
     targets: msg,
     alpha: 0,
-    duration: 4000, // Duración aumentada a 4000 ms
+    duration: 4000, // Mensajes duran 4000 ms
     ease: 'Power1',
     onComplete: () => { msg.destroy(); }
   });
@@ -132,7 +133,7 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // No se dibuja fondo desde Phaser (se usa CSS)
+    // Se utiliza un contenedor central (el fondo se muestra vía CSS)
     const startContainer = this.add.container(400, 300);
     
     const titleText = this.add.text(0, -100, 'LIBRA Escape - La Conspiración KIP', {
@@ -170,36 +171,42 @@ class GameScene extends Phaser.Scene {
   create() {
     this.gameState = new GameState();
     
-    // No se agrega fondo en Phaser; el fondo es vía CSS
+    // El fondo se muestra vía CSS; la música se reproduce en bucle
     this.musica = this.sound.add('musicaFondo');
     this.musica.play({ loop: true, volume: 0.5 });
     
     this.gameContainer = this.add.container(0, 0);
     
-    // Jugador: Milei (escala 0.6)
-    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.6);
+    // Jugador: Milei (escala 0.5)
+    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
     this.player.setCollideWorldBounds(true);
     this.gameContainer.add(this.player);
     
-    // UI: Visor de Apoyo y alertas FBI
+    // UI: Visor de Apoyo y alertas FBI (con estilo llamativo)
     this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
-      fontSize: '18px',
-      fill: '#000'
+      fontSize: '28px',
+      fill: '#000',
+      fontStyle: 'bold',
+      stroke: '#fff',
+      strokeThickness: 3
     });
     this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
-      fontSize: '18px',
-      fill: '#000'
+      fontSize: '28px',
+      fill: '#000',
+      fontStyle: 'bold',
+      stroke: '#fff',
+      strokeThickness: 3
     });
     
-    // Grupo de documentos (coleccionable, escala 0.5)
+    // Grupo de documentos (escala 0.3)
     this.documents = this.physics.add.group();
     this.spawnDocument();
     
-    // Grupo de tweets (escala 0.5)
+    // Grupo de tweets (escala 0.3)
     this.tweets = this.physics.add.group();
     this.spawnTweet();
     
-    // Grupo de trampas (escala 0.5)
+    // Grupo de trampas (escala 0.3)
     this.traps = this.physics.add.group();
     this.spawnTrap();
     this.spawnTrap();
@@ -261,7 +268,7 @@ class GameScene extends Phaser.Scene {
     this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
     this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
     
-    // Objetivo: 15 documentos recolectados antes de agotar el apoyo
+    // Objetivo: recolectar 15 documentos antes de que se agote el apoyo
     if (this.gameState.evidencias.documentos >= 15) {
       this.musica.stop();
       this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: true });
@@ -274,26 +281,26 @@ class GameScene extends Phaser.Scene {
   spawnDocument() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
-    this.documents.create(x, y, 'documento').setScale(0.5);
+    this.documents.create(x, y, 'documento').setScale(0.3);
   }
   
   spawnTweet() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
-    this.tweets.create(x, y, 'tweet').setScale(0.5);
+    this.tweets.create(x, y, 'tweet').setScale(0.3);
   }
   
   spawnTrap() {
     const x = Phaser.Math.Between(50, 750);
     const y = Phaser.Math.Between(50, 550);
-    this.traps.create(x, y, 'trampa').setScale(0.5);
+    this.traps.create(x, y, 'trampa').setScale(0.3);
   }
   
   collectDocument(player, document) {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos += 1;
     this.sound.play('coin');
-    // Re-spawnea un documento y una trampa cada vez que se recoge uno
+    // Cada documento recolectado genera un nuevo documento y una trampa
     this.spawnDocument();
     this.spawnTrap();
   }
@@ -314,8 +321,17 @@ class GameScene extends Phaser.Scene {
   
   hitTrap(player, trap) {
     trap.disableBody(true, true);
-    this.gameState.apoyo = Math.max(this.gameState.apoyo - 5, 0);
+    // La trampa reduce 15 puntos de apoyo
+    this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
     showTempMessage(this, "¡Trampa activada!", "#f80");
+    
+    // Cada 3 impactos de trampa se añade 1 alerta FBI y se reinicia el contador
+    this.gameState.trapHits += 1;
+    if (this.gameState.trapHits >= 3) {
+      this.gameState.alertasFBI += 1;
+      this.gameState.trapHits = 0;
+    }
+    
     this.time.delayedCall(2000, () => { this.spawnTrap(); });
   }
   
@@ -375,14 +391,18 @@ class EndScene extends Phaser.Scene {
 }
 
 // ===================
-// CONFIGURACIÓN DE PHASER
+// CONFIGURACIÓN DE PHASER (modo responsivo)
 // ===================
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
   parent: 'game-container',
   backgroundColor: '#fff', // Canvas blanco
+  width: 800,
+  height: 600,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   physics: {
     default: 'arcade',
     arcade: { debug: false }
