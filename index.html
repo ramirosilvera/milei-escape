@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milei vs. El FBI</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milei vs. El FBI: La estafa de Libra</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 </head>
 <body>
-    <div id="game-container">
-        <div id="controls">
-            <button id="up" class="arrow-btn">▲</button>
-            <div class="horizontal-buttons">
-                <button id="left" class="arrow-btn">◀</button>
-                <button id="down" class="arrow-btn">▼</button>
-                <button id="right" class="arrow-btn">▶</button>
-            </div>
-        </div>
+  <!-- Contenedor principal del juego -->
+  <div id="game-container">
+    <!-- Controles táctiles fuera del canvas -->
+    <div id="controls">
+      <button id="up" class="arrow-btn" aria-label="Arriba">↑</button>
+      <div id="middle-controls">
+        <button id="left" class="arrow-btn" aria-label="Izquierda">←</button>
+        <button id="down" class="arrow-btn" aria-label="Abajo">↓</button>
+        <button id="right" class="arrow-btn" aria-label="Derecha">→</button>
+      </div>
     </div>
-    <script src="game.js"></script>
+  </div>
+  
+  <script src="script.js"></script>
 </body>
 </html>
