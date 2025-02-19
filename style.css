@@ -1,3 +1,4 @@
+/* Reset y configuración global */
 * {
   margin: 0;
   padding: 0;
@@ -21,9 +22,9 @@ html, body {
 
 #game-container {
   position: relative;
-  width: 95vw;
+  width: 90vw;
   max-width: 800px;
-  height: calc(95vw * 0.75);
+  height: calc(90vw * 0.75);
   max-height: 600px;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 20px;
@@ -31,22 +32,23 @@ html, body {
   overflow: hidden;
 }
 
+/* Controles táctiles */
 #controls {
   position: fixed;
-  bottom: 15px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   z-index: 1000;
   touch-action: manipulation;
 }
 
 #middle-controls {
   display: flex;
-  gap: 15px;
+  gap: 20px;
 }
 
 .arrow-btn {
@@ -68,10 +70,121 @@ html, body {
   justify-content: center;
 }
 
+.arrow-btn:active {
+  transform: scale(0.85);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 @media (min-width: 600px) {
   .arrow-btn {
     font-size: 28px;
   }
 }
 
-/* Resto del CSS anterior sin cambios... */
+/* Notificaciones */
+.notification-top {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translate(-50%, -20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Pantallas de inicio/fin */
+.game-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 90%;
+}
+
+.game-title {
+  font-size: 2.5em;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.game-text {
+  font-size: 1.1em;
+  color: #34495e;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.game-button {
+  font-size: 1.2em;
+  color: white;
+  background: #27ae60;
+  padding: 15px 40px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.game-button:hover {
+  background: #219a52;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  #game-container {
+    width: 95vw;
+    height: calc(95vw * 0.75);
+  }
+  
+  .arrow-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .game-screen {
+    padding: 20px;
+  }
+  
+  .game-title {
+    font-size: 2em;
+  }
+  
+  .game-text {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 400px) {
+  .arrow-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  #middle-controls {
+    gap: 15px;
+  }
+}
