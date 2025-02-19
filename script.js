@@ -102,7 +102,7 @@ function showTempMessage(scene, textContent, color = '#fff') {
   scene.tweens.add({
     targets: msg,
     alpha: 0,
-    duration: 4000, // Mensajes duran 4000 ms
+    duration: 6000, // Mensajes duran 6000 ms
     ease: 'Power1',
     onComplete: () => { msg.destroy(); }
   });
@@ -136,7 +136,7 @@ class StartScene extends Phaser.Scene {
     // Se utiliza un contenedor central (el fondo se muestra vía CSS)
     const startContainer = this.add.container(400, 300);
     
-    const titleText = this.add.text(0, -100, 'LIBRA Escape - La Conspiración KIP', {
+    const titleText = this.add.text(0, -100, 'Milei vs. El FBI: La estafa de Libra', {
       fontSize: '28px',
       fill: '#000',
       align: 'center'
@@ -177,8 +177,8 @@ class GameScene extends Phaser.Scene {
     
     this.gameContainer = this.add.container(0, 0);
     
-    // Jugador: Milei (escala 0.5)
-    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
+    // Jugador: Milei (escala 0.3)
+    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.3);
     this.player.setCollideWorldBounds(true);
     this.gameContainer.add(this.player);
     
