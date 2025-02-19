@@ -1,4 +1,4 @@
-// Objeto global para controlar la entrada táctil
+// Objeto global para la entrada táctil
 let touchInput = {
   up: false,
   down: false,
@@ -6,11 +6,10 @@ let touchInput = {
   right: false
 };
 
-// Una vez cargado el DOM, se asocian los botones táctiles
 document.addEventListener('DOMContentLoaded', function() {
   const controls = document.getElementById('controls');
   if (controls) {
-    controls.style.display = 'flex';
+    // Aseguramos que los botones respondan a pointer events
     const btnUp = document.getElementById('up');
     const btnDown = document.getElementById('down');
     const btnLeft = document.getElementById('left');
@@ -18,12 +17,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnUp.addEventListener('pointerdown', () => touchInput.up = true);
     btnUp.addEventListener('pointerup', () => touchInput.up = false);
+    btnUp.addEventListener('pointerout', () => touchInput.up = false);
+
     btnDown.addEventListener('pointerdown', () => touchInput.down = true);
     btnDown.addEventListener('pointerup', () => touchInput.down = false);
+    btnDown.addEventListener('pointerout', () => touchInput.down = false);
+
     btnLeft.addEventListener('pointerdown', () => touchInput.left = true);
     btnLeft.addEventListener('pointerup', () => touchInput.left = false);
+    btnLeft.addEventListener('pointerout', () => touchInput.left = false);
+
     btnRight.addEventListener('pointerdown', () => touchInput.right = true);
     btnRight.addEventListener('pointerup', () => touchInput.right = false);
+    btnRight.addEventListener('pointerout', () => touchInput.right = false);
   }
 });
 
@@ -88,7 +94,7 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Se cargan los assets necesarios para todo el juego
+    // Carga de assets
     this.load.image('fondo', 'img/fondo.jpeg');
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
@@ -104,21 +110,26 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Fondo y título de la pantalla de inicio
-    this.add.image(400, 300, 'fondo');
+    // Fondo
+    this.add.image(400, 300, 'fondo').setScale(0.8);
     
-    const titleText = this.add.text(400, 150, 'LIBRA Escape - La Conspiración KIP', {
+    // Contenedor de elementos de la pantalla de inicio
+    const startContainer = this.add.container(400, 300);
+    
+    // Título
+    const titleText = this.add.text(0, -100, 'LIBRA Escape - La Conspiración KIP', {
       fontSize: '28px',
-      fill: '#fff'
+      fill: '#fff',
+      align: 'center'
     });
     titleText.setOrigin(0.5);
     
-    // Botón para iniciar el juego
-    const startButton = this.add.text(400, 300, 'Iniciar Juego', {
+    // Botón de inicio
+    const startButton = this.add.text(0, 0, 'Iniciar Juego', {
       fontSize: '24px',
       fill: '#0f0',
       backgroundColor: '#000',
-      padding: { x: 10, y: 5 }
+      padding: { x: 20, y: 10 }
     });
     startButton.setOrigin(0.5);
     startButton.setInteractive({ useHandCursor: true });
@@ -127,6 +138,8 @@ class StartScene extends Phaser.Scene {
       this.sound.play('click');
       this.scene.start('GameScene');
     });
+    
+    startContainer.add([titleText, startButton]);
   }
 }
 
@@ -139,38 +152,58 @@ class GameScene extends Phaser.Scene {
   }
   
   create() {
-    // Inicializa el estado del juego
+    // Estado del juego
     this.gameState = new GameState();
     
-    // Fondo y música
-    this.add.image(400, 300, 'fondo');
+    // Fondo
+    this.add.image(400, 300, 'fondo').setScale(0.8);
+    
+    // Música de fondo
     this.musica = this.sound.add('musicaFondo');
     this.musica.play({ loop: true, volume: 0.5 });
     
-    // Jugador
-    this.player = this.physics.add.sprite(400, 300, 'milei');
+    // Contenedor para objetos del juego
+    this.gameContainer = this.add.container(0, 0);
+    
+    // Jugador (con tamaño reducido y en contenedor)
+    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.5);
     this.player.setCollideWorldBounds(true);
+    this.gameContainer.add(this.player);
     
-    // Controles de teclado
-    this.cursors = this.input.keyboard.createCursorKeys();
+    // UI: Visor de apoyo popular (arriba a la izquierda)
+    this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
+      fontSize: '18px',
+      fill: '#fff'
+    });
+    this.supportText.setScrollFactor(0);
     
-    // Grupo de documentos (coleccionables)
+    // UI: Indicador de alertas FBI (arriba a la derecha)
+    this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
+      fontSize: '18px',
+      fill: '#fff'
+    });
+    this.fbiText.setScrollFactor(0);
+    
+    // Documentos (coleccionable) en un contenedor
     this.documents = this.physics.add.group();
-    this.documents.create(200, 200, 'documento');
+    let doc = this.documents.create(200, 200, 'documento').setScale(0.5);
     
-    // Grupo de agentes del FBI
+    // Agentes del FBI
     this.agents = this.physics.add.group();
     for (let i = 0; i < 3; i++) {
       let x = Phaser.Math.Between(100, 700);
       let y = Phaser.Math.Between(100, 500);
-      let agentSprite = this.physics.add.sprite(x, y, 'fbi');
+      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.5);
       agentSprite.ia = new AgentIA(agentSprite);
       this.agents.add(agentSprite);
     }
     
-    // Detección de colisiones e interacciones
+    // Colisiones e interacciones
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
+    
+    // Controles por teclado
+    this.cursors = this.input.keyboard.createCursorKeys();
   }
   
   update() {
@@ -189,7 +222,7 @@ class GameScene extends Phaser.Scene {
       vy = speed;
     }
     
-    // Entrada táctil (flechas en pantalla)
+    // Entrada táctil (botones en pantalla)
     if (touchInput.left) {
       vx = -speed;
     } else if (touchInput.right) {
@@ -203,14 +236,18 @@ class GameScene extends Phaser.Scene {
     
     this.player.setVelocity(vx, vy);
     
-    // Actualiza la IA de los agentes
+    // Actualiza IA de cada agente
     this.agents.children.iterate((agent) => {
       if (agent.ia) {
         agent.ia.update(this.player);
       }
     });
     
-    // Condición de fin de juego (por ejemplo, cuando el apoyo llega a 0)
+    // Actualiza el visor de apoyo y alertas FBI
+    this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
+    this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
+    
+    // Condición de fin de juego (apoyo se agota)
     if (this.gameState.apoyo <= 0) {
       this.musica.stop();
       this.scene.start('EndScene', { score: this.gameState.evidencias.documentos });
@@ -226,6 +263,7 @@ class GameScene extends Phaser.Scene {
   onAgentCollision(player, agent) {
     this.sound.play('sirena');
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
+    this.gameState.alertasFBI += 1;
   }
 }
 
@@ -242,27 +280,30 @@ class EndScene extends Phaser.Scene {
   }
   
   create() {
-    // Fondo y textos finales
-    this.add.image(400, 300, 'fondo');
+    this.add.image(400, 300, 'fondo').setScale(0.8);
     
-    const endText = this.add.text(400, 200, 'Juego Terminado', {
+    // Contenedor para la pantalla final
+    const endContainer = this.add.container(400, 300);
+    
+    const endText = this.add.text(0, -80, 'Juego Terminado', {
       fontSize: '32px',
-      fill: '#fff'
+      fill: '#fff',
+      align: 'center'
     });
     endText.setOrigin(0.5);
     
-    const scoreText = this.add.text(400, 260, `Documentos recolectados: ${this.finalScore}`, {
+    const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
       fontSize: '24px',
-      fill: '#fff'
+      fill: '#fff',
+      align: 'center'
     });
     scoreText.setOrigin(0.5);
     
-    // Botón para reiniciar
-    const restartButton = this.add.text(400, 350, 'Reiniciar Juego', {
+    const restartButton = this.add.text(0, 80, 'Reiniciar Juego', {
       fontSize: '24px',
       fill: '#0f0',
       backgroundColor: '#000',
-      padding: { x: 10, y: 5 }
+      padding: { x: 20, y: 10 }
     });
     restartButton.setOrigin(0.5);
     restartButton.setInteractive({ useHandCursor: true });
@@ -271,6 +312,8 @@ class EndScene extends Phaser.Scene {
       this.sound.play('click');
       this.scene.start('StartScene');
     });
+    
+    endContainer.add([endText, scoreText, restartButton]);
   }
 }
 
