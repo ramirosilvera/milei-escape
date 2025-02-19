@@ -1,114 +1,161 @@
-const config = {
+// Definir variables
+let canvas, ctx;
+let milei, fbiAgents, monedas, trampas, documentos;
+let imgMilei, imgFBI, imgMoneda, imgTrampa, imgDocumento, imgFondo;
+let sonidoClick, sonidoMoneda, sonidoMusica, sonidoNotificacion, sonidoSirena;
+
+// Configuración inicial
+const CONFIG = {
     velocidadMilei: 5,
-    velocidadFBI: 1,
-    radioDeteccion: 150,
-    tamañoCanvas: { ancho: 800, alto: 500 }
+    velocidadFBI: 2,
+    cantidadFBI: 3,
+    cantidadMonedas: 5,
+    cantidadTrampas: 2,
+    cantidadDocumentos: 3
 };
 
-let juego = {
-    activo: false,
-    nivel: 1,
-    apoyo: 100,
-    pistasFBI: 0,
-    milei: { x: 400, y: 250 },
-    agentes: []
-};
+// Función para cargar recursos (imágenes y sonidos)
+function cargarRecursos() {
+    imgMilei = new Image();
+    imgMilei.src = "img/milei.png";
 
-const DOM = {
-    inicio: document.getElementById('pantalla-inicio'),
-    juego: document.getElementById('juego'),
-    fin: document.getElementById('pantalla-fin'),
-    nivel: document.getElementById('nivel'),
-    apoyo: document.getElementById('apoyo'),
-    pistas: document.getElementById('pistas'),
-    resultado: document.getElementById('resultado'),
-    canvas: document.getElementById('game-canvas'),
-    ctx: document.getElementById('game-canvas').getContext('2d')
-};
+    imgFBI = new Image();
+    imgFBI.src = "img/fbi.png";
 
-DOM.canvas.width = config.tamañoCanvas.ancho;
-DOM.canvas.height = config.tamañoCanvas.alto;
+    imgMoneda = new Image();
+    imgMoneda.src = "img/moneda.png";
 
+    imgTrampa = new Image();
+    imgTrampa.src = "img/trampa.png";
+
+    imgDocumento = new Image();
+    imgDocumento.src = "img/documento.png";
+
+    imgFondo = new Image();
+    imgFondo.src = "img/fondo.png";
+
+    sonidoClick = new Audio("sounds/click.wav");
+    sonidoMoneda = new Audio("sounds/coin.wav");
+    sonidoMusica = new Audio("sounds/musica-fondo.wav");
+    sonidoNotificacion = new Audio("sounds/notification.wav");
+    sonidoSirena = new Audio("sounds/sirena.wav");
+
+    sonidoMusica.loop = true; // La música de fondo se repite en bucle
+}
+
+// Función para iniciar el juego
 function iniciarJuego() {
-    DOM.inicio.style.display = 'none';
-    DOM.juego.style.display = 'block';
-    DOM.fin.style.display = 'none';
+    document.getElementById("pantalla-inicio").style.display = "none";
+    document.getElementById("juego").style.display = "block";
+    
+    canvas = document.getElementById("game-canvas");
+    ctx = canvas.getContext("2d");
 
-    juego.activo = true;
-    juego.nivel = 1;
-    juego.pistasFBI = 0;
-    juego.apoyo = 100;
-    juego.milei = { x: 400, y: 250 };
-    juego.agentes = [];
+    canvas.width = 800;
+    canvas.height = 500;
 
-    cargarAgentes();
-    actualizarUI();
-    loopJuego();
-}
+    // Reproducir música de fondo
+    sonidoMusica.play();
 
-function cargarAgentes() {
-    for (let i = 0; i < juego.nivel + 2; i++) {
-        let posX, posY;
-        do {
-            posX = Math.random() * DOM.canvas.width;
-            posY = Math.random() * DOM.canvas.height;
-        } while (Math.abs(posX - juego.milei.x) < 100 && Math.abs(posY - juego.milei.y) < 100);
+    // Crear objetos del juego
+    milei = { x: 400, y: 250, ancho: 50, alto: 50 };
+    fbiAgents = [];
+    monedas = [];
+    trampas = [];
+    documentos = [];
 
-        juego.agentes.push({ x: posX, y: posY });
+    for (let i = 0; i < CONFIG.cantidadFBI; i++) {
+        fbiAgents.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
     }
+
+    for (let i = 0; i < CONFIG.cantidadMonedas; i++) {
+        monedas.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+    }
+
+    for (let i = 0; i < CONFIG.cantidadTrampas; i++) {
+        trampas.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+    }
+
+    for (let i = 0; i < CONFIG.cantidadDocumentos; i++) {
+        documentos.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+    }
+
+    // Iniciar el bucle del juego
+    requestAnimationFrame(actualizarJuego);
 }
 
-function loopJuego() {
-    if (!juego.activo) return;
-
-    DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
+// Función para actualizar el juego
+function actualizarJuego() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar fondo
+    ctx.drawImage(imgFondo, 0, 0, canvas.width, canvas.height);
 
     // Dibujar Milei
-    DOM.ctx.fillStyle = 'blue';
-    DOM.ctx.fillRect(juego.milei.x, juego.milei.y, 50, 50);
+    ctx.drawImage(imgMilei, milei.x, milei.y, milei.ancho, milei.alto);
 
-    // Dibujar agentes
-    DOM.ctx.fillStyle = 'red';
-    juego.agentes.forEach(agente => {
-        DOM.ctx.fillRect(agente.x, agente.y, 50, 50);
-        moverAgente(agente);
-        verificarColision(agente);
+    // Dibujar FBI
+    fbiAgents.forEach(agent => {
+        ctx.drawImage(imgFBI, agent.x, agent.y, 50, 50);
+        moverFBI(agent);
     });
 
-    requestAnimationFrame(loopJuego);
+    // Dibujar monedas
+    monedas.forEach(moneda => {
+        ctx.drawImage(imgMoneda, moneda.x, moneda.y, 30, 30);
+    });
+
+    // Dibujar trampas
+    trampas.forEach(trampa => {
+        ctx.drawImage(imgTrampa, trampa.x, trampa.y, 40, 40);
+    });
+
+    // Dibujar documentos
+    documentos.forEach(doc => {
+        ctx.drawImage(imgDocumento, doc.x, doc.y, 40, 40);
+    });
+
+    requestAnimationFrame(actualizarJuego);
 }
 
-function moverAgente(agente) {
-    const dx = juego.milei.x - agente.x;
-    const dy = juego.milei.y - agente.y;
-    const distancia = Math.sqrt(dx * dx + dy * dy);
+// Función para mover FBI
+function moverFBI(agent) {
+    let dx = milei.x - agent.x;
+    let dy = milei.y - agent.y;
+    let distancia = Math.sqrt(dx * dx + dy * dy);
 
-    if (distancia < config.radioDeteccion) {
-        agente.x += (dx / distancia) * config.velocidadFBI;
-        agente.y += (dy / distancia) * config.velocidadFBI;
+    if (distancia < 200) { // Si Milei está cerca, el FBI lo persigue
+        agent.x += (dx / distancia) * CONFIG.velocidadFBI;
+        agent.y += (dy / distancia) * CONFIG.velocidadFBI;
     }
-}
 
-function verificarColision(agente) {
-    if (Math.abs(juego.milei.x - agente.x) < 50 && Math.abs(juego.milei.y - agente.y) < 50) {
+    if (distancia < 30) {
+        sonidoSirena.play();
         terminarJuego(false);
     }
 }
 
+// Función para mover a Milei
 function mover(direccion) {
-    const paso = config.velocidadMilei;
-    if (direccion === 'up') juego.milei.y = Math.max(0, juego.milei.y - paso);
-    if (direccion === 'down') juego.milei.y = Math.min(DOM.canvas.height - 50, juego.milei.y + paso);
-    if (direccion === 'left') juego.milei.x = Math.max(0, juego.milei.x - paso);
-    if (direccion === 'right') juego.milei.x = Math.min(DOM.canvas.width - 50, juego.milei.x + paso);
+    sonidoClick.play();
+    if (direccion === "up" && milei.y > 0) milei.y -= CONFIG.velocidadMilei;
+    if (direccion === "down" && milei.y < canvas.height - milei.alto) milei.y += CONFIG.velocidadMilei;
+    if (direccion === "left" && milei.x > 0) milei.x -= CONFIG.velocidadMilei;
+    if (direccion === "right" && milei.x < canvas.width - milei.ancho) milei.x += CONFIG.velocidadMilei;
 }
 
-function terminarJuego() {
-    juego.activo = false;
-    DOM.juego.style.display = 'none';
-    DOM.fin.style.display = 'block';
+// Función para finalizar el juego
+function terminarJuego(gano) {
+    document.getElementById("juego").style.display = "none";
+    document.getElementById("pantalla-fin").style.display = "block";
+    document.getElementById("resultado").innerText = gano ? "¡Escapaste del FBI!" : "Te atraparon 😱";
+    sonidoMusica.pause();
 }
 
+// Función para reiniciar el juego
 function reiniciar() {
     location.reload();
 }
+
+// Cargar imágenes y sonidos antes de empezar
+cargarRecursos();
