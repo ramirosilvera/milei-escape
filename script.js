@@ -48,7 +48,6 @@ class GameState {
     };
     this.alertasFBI = 0;
     this.apoyo = 100;
-    // Contador para impactos de trampas
     this.trapHits = 0;
   }
 }
@@ -90,7 +89,6 @@ class AgentIA {
   }
 }
 
-// Función para mostrar mensajes temporales (por ejemplo, de tweets)
 function showTempMessage(scene, textContent, color = '#fff') {
   const msg = scene.add.text(400, 550, textContent, {
     fontSize: '20px',
@@ -102,14 +100,14 @@ function showTempMessage(scene, textContent, color = '#fff') {
   scene.tweens.add({
     targets: msg,
     alpha: 0,
-    duration: 4000, // Mensajes duran 4000 ms
+    duration: 4000,
     ease: 'Power1',
     onComplete: () => { msg.destroy(); }
   });
 }
 
 // ===================
-// SCENA DE INICIO
+// SCENA DE INICIO MEJORADA
 // ===================
 class StartScene extends Phaser.Scene {
   constructor() {
@@ -117,7 +115,6 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Carga de assets
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
@@ -133,53 +130,81 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Contenedor central para agrupar elementos en la pantalla de inicio
-    const startContainer = this.add.container(400, 300);
+    // Fondo animado
+    this.add.gradient(0, 0, 800, 600, 0x1a1a1a, 0x4a4a4a).setOrigin(0);
     
-    // Título del juego
-    const titleText = this.add.text(0, -150, 'Milei vs. El FBI: La estafa de Libra', {
-      fontSize: '32px',
-      fill: '#000',
-      align: 'center',
-      fontStyle: 'bold'
+    // Panel central
+    const panel = this.add.rectangle(400, 300, 700, 500, 0x000000, 0.7)
+      .setStrokeStyle(2, 0xffffff);
+    
+    // Título animado
+    const title = this.add.text(400, 100, 'MILEI vs FBI', {
+      fontSize: '48px',
+      fill: '#FFD700',
+      fontStyle: 'bold',
+      stroke: '#000',
+      strokeThickness: 3
+    }).setOrigin(0.5);
+    
+    this.tweens.add({
+      targets: title,
+      scale: 1.1,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1
     });
-    titleText.setOrigin(0.5);
     
-    // Introducción y explicación del objetivo
-    const introText = "En este juego, interpretas a Javier Milei, denunciado al FBI por la difusión de la fallida cripto $LIBRA.\n" +
-                        "Tu objetivo es robar 15 documentos para engañar al FBI e impedir que demuestren tu culpabilidad\n" +
-                        "mientras esquivas agentes del FBI, evitas trampas y aprovechas tweets que pueden aumentar o reducir tu apoyo.\n" +
-                        "¡Si tu apoyo llega a 0 perderás!";
+    // Iconos decorativos
+    const icons = this.add.container(400, 300);
+    const leftIcon = this.add.image(-300, 0, 'documento').setScale(0.2);
+    const rightIcon = this.add.image(300, 0, 'fbi').setScale(0.3);
+    icons.add([leftIcon, rightIcon]);
     
-    const intro = this.add.text(0, -50, introText, {
+    // Texto introductorio con estilo
+    const introText = this.add.text(400, 220, [
+      '¡La cripto-estafa de $LIBRA ha sido descubierta!\n',
+      'Recolecta 15 documentos clasificados del FBI\n',
+      'para encubrir tu participación antes de que\n',
+      'tu apoyo político se desplome por completo.\n\n',
+      '▸ Esquiva agentes del FBI\n',
+      '▸ Evita trampas tecnológicas\n',
+      '▸ Usa tweets a tu favor\n',
+      '▸ Mantén tu apoyo por encima de 0'
+    ], {
       fontSize: '20px',
-      fill: '#000',
+      fill: '#FFFFFF',
       align: 'center',
-      wordWrap: { width: 700 }
-    });
-    intro.setOrigin(0.5);
+      lineSpacing: 10
+    }).setOrigin(0.5);
     
-    // Botón para iniciar el juego
-    const startButton = this.add.text(0, 100, 'Iniciar Juego', {
-      fontSize: '26px',
-      fill: '#0f0',
-      backgroundColor: '#000',
-      padding: { x: 20, y: 10 }
+    // Botón de inicio con animación
+    const startButton = this.add.text(400, 450, 'INICIAR MISIÓN', {
+      fontSize: '32px',
+      fill: '#00FF00',
+      backgroundColor: '#000000',
+      padding: { x: 30, y: 15 },
+      borderRadius: 10
+    }).setOrigin(0.5).setInteractive();
+    
+    startButton.on('pointerover', () => {
+      startButton.setScale(1.1);
+      startButton.setBackgroundColor('#005500');
     });
-    startButton.setOrigin(0.5);
-    startButton.setInteractive({ useHandCursor: true });
+    
+    startButton.on('pointerout', () => {
+      startButton.setScale(1);
+      startButton.setBackgroundColor('#000000');
+    });
+    
     startButton.on('pointerdown', () => {
       this.sound.play('click');
       this.scene.start('GameScene');
     });
-    
-    // Se agregan los elementos al contenedor central
-    startContainer.add([titleText, intro, startButton]);
   }
 }
 
 // ===================
-// SCENA DEL JUEGO
+// SCENA DEL JUEGO CON VISOR DE DOCUMENTOS
 // ===================
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -188,175 +213,190 @@ class GameScene extends Phaser.Scene {
   
   create() {
     this.gameState = new GameState();
-    
-    // El fondo se muestra vía CSS; la música se reproduce en bucle
     this.musica = this.sound.add('musicaFondo');
     this.musica.play({ loop: true, volume: 0.5 });
     
-    this.gameContainer = this.add.container(0, 0);
+    // UI mejorada
+    this.createUI();
     
-    // Jugador: Milei (escala 0.2)
+    // Elementos del juego
     this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.2);
     this.player.setCollideWorldBounds(true);
-    this.gameContainer.add(this.player);
     
-    // UI: Visor de Apoyo y alertas FBI (con estilo llamativo)
-    this.supportText = this.add.text(10, 10, 'Apoyo: ' + this.gameState.apoyo, {
-      fontSize: '28px',
-      fill: '#000',
-      fontStyle: 'bold',
-      stroke: '#fff',
-      strokeThickness: 3
-    });
-    this.fbiText = this.add.text(650, 10, 'FBI: ' + this.gameState.alertasFBI, {
-      fontSize: '28px',
-      fill: '#000',
-      fontStyle: 'bold',
-      stroke: '#fff',
-      strokeThickness: 3
+    // Grupos de objetos
+    this.createGameObjects();
+    
+    // Eventos de colisión
+    this.setupCollisions();
+    
+    // Controles
+    this.cursors = this.input.keyboard.createCursorKeys();
+  }
+
+  createUI() {
+    // Panel superior con estadísticas
+    const uiPanel = this.add.rectangle(400, 15, 780, 50, 0x000000, 0.5)
+      .setOrigin(0.5, 0);
+    
+    this.supportText = this.add.text(20, 10, 'APOYO: 100%', {
+      fontSize: '24px',
+      fill: '#00FF00',
+      fontStyle: 'bold'
     });
     
-    // Grupo de documentos (escala 0.3)
+    this.fbiText = this.add.text(650, 10, 'ALERTAS FBI: 0', {
+      fontSize: '24px',
+      fill: '#FF0000',
+      fontStyle: 'bold'
+    });
+    
+    // Visor de documentos con cuenta regresiva
+    this.documentCounter = this.add.text(400, 10, 'DOCUMENTOS: 15/15', {
+      fontSize: '24px',
+      fill: '#FFFFFF',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0);
+  }
+
+  createGameObjects() {
     this.documents = this.physics.add.group();
-    this.spawnDocument();
-    
-    // Grupo de tweets (escala 0.3)
     this.tweets = this.physics.add.group();
-    this.spawnTweet();
-    
-    // Grupo de trampas (escala 0.3)
     this.traps = this.physics.add.group();
-    this.spawnTrap();
-    this.spawnTrap();
-    
-    // Grupo de agentes del FBI (2 agentes, escala 0.3)
     this.agents = this.physics.add.group();
+
+    this.spawnDocument();
+    this.spawnTweet();
+    this.spawnTrap();
+    this.spawnTrap();
+
     for (let i = 0; i < 2; i++) {
-      let x = Phaser.Math.Between(100, 700);
-      let y = Phaser.Math.Between(100, 500);
-      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.3);
-      agentSprite.ia = new AgentIA(agentSprite);
-      this.agents.add(agentSprite);
+      const agent = this.physics.add.sprite(
+        Phaser.Math.Between(100, 700),
+        Phaser.Math.Between(100, 500),
+        'fbi'
+      ).setScale(0.3);
+      agent.ia = new AgentIA(agent);
+      this.agents.add(agent);
     }
-    
-    // Colisiones e interacciones
+  }
+
+  setupCollisions() {
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
     this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
-    
-    // Controles por teclado
-    this.cursors = this.input.keyboard.createCursorKeys();
   }
-  
+
   update() {
+    this.handleMovement();
+    this.updateAgents();
+    this.updateUI();
+    this.checkGameState();
+  }
+
+  handleMovement() {
     const speed = 200;
     let vx = 0, vy = 0;
     
-    if (this.cursors.left.isDown) {
-      vx = -speed;
-    } else if (this.cursors.right.isDown) {
-      vx = speed;
-    }
-    if (this.cursors.up.isDown) {
-      vy = -speed;
-    } else if (this.cursors.down.isDown) {
-      vy = speed;
-    }
-    
-    if (touchInput.left) {
-      vx = -speed;
-    } else if (touchInput.right) {
-      vx = speed;
-    }
-    if (touchInput.up) {
-      vy = -speed;
-    } else if (touchInput.down) {
-      vy = speed;
-    }
+    if (this.cursors.left.isDown || touchInput.left) vx = -speed;
+    if (this.cursors.right.isDown || touchInput.right) vx = speed;
+    if (this.cursors.up.isDown || touchInput.up) vy = -speed;
+    if (this.cursors.down.isDown || touchInput.down) vy = speed;
     
     this.player.setVelocity(vx, vy);
-    
-    this.agents.children.iterate((agent) => {
-      if (agent.ia) {
-        agent.ia.update(this.player);
-      }
-    });
-    
-    this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
-    this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
-    
-    // Objetivo: recolectar 15 documentos antes de que se agote el apoyo
+  }
+
+  updateAgents() {
+    this.agents.children.each(agent => agent.ia.update(this.player));
+  }
+
+  updateUI() {
+    this.supportText.setText(`APOYO: ${this.gameState.apoyo}%`);
+    this.fbiText.setText(`ALERTAS FBI: ${this.gameState.alertasFBI}`);
+    const remaining = 15 - this.gameState.evidencias.documentos;
+    this.documentCounter.setText(`DOCUMENTOS: ${remaining}/15`);
+  }
+
+  checkGameState() {
     if (this.gameState.evidencias.documentos >= 15) {
-      this.musica.stop();
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: true });
+      this.endGame(true);
     } else if (this.gameState.apoyo <= 0) {
-      this.musica.stop();
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false });
+      this.endGame(false);
     }
   }
-  
-  spawnDocument() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.documents.create(x, y, 'documento').setScale(0.3);
+
+  endGame(win) {
+    this.musica.stop();
+    this.scene.start('EndScene', { 
+      score: this.gameState.evidencias.documentos,
+      win: win
+    });
   }
-  
-  spawnTweet() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.tweets.create(x, y, 'tweet').setScale(0.3);
-  }
-  
-  spawnTrap() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.traps.create(x, y, 'trampa').setScale(0.3);
-  }
-  
+
   collectDocument(player, document) {
     document.disableBody(true, true);
-    this.gameState.evidencias.documentos += 1;
+    this.gameState.evidencias.documentos++;
     this.sound.play('coin');
-    // Cada documento recolectado genera un nuevo documento y una trampa
     this.spawnDocument();
     this.spawnTrap();
   }
-  
+
   collectTweet(player, tweet) {
     tweet.disableBody(true, true);
-    this.sound.play('notification');
-    const isPositive = Phaser.Math.Between(0, 1) === 0;
-    if (isPositive) {
-      this.gameState.apoyo += 10;
-      showTempMessage(this, "Ratas inmundas de la casta política", "#0f0");
-    } else {
-      this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-      showTempMessage(this, "No estaba interiorizado de los pormenores del proyecto", "#f00");
-    }
+    const effect = Phaser.Math.Between(0, 1) ? 10 : -10;
+    this.gameState.apoyo = Phaser.Math.Clamp(
+      this.gameState.apoyo + effect,
+      0, 100
+    );
+    showTempMessage(this, 
+      effect > 0 ? "¡Libertad avanza!" : "¡Error en los datos!",
+      effect > 0 ? "#0F0" : "#F00"
+    );
     this.spawnTweet();
   }
-  
+
   hitTrap(player, trap) {
     trap.disableBody(true, true);
-    // La trampa reduce 15 puntos de apoyo
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
-    showTempMessage(this, "¡Trampa activada!", "#f80");
+    this.gameState.trapHits++;
     
-    // Cada 3 impactos de trampa se añade 1 alerta FBI y se reinicia el contador
-    this.gameState.trapHits += 1;
     if (this.gameState.trapHits >= 3) {
-      this.gameState.alertasFBI += 1;
+      this.gameState.alertasFBI++;
       this.gameState.trapHits = 0;
     }
     
-    this.time.delayedCall(2000, () => { this.spawnTrap(); });
+    showTempMessage(this, "¡TRAMPA ACTIVADA!", "#FFA500");
+    this.time.delayedCall(2000, () => this.spawnTrap());
   }
-  
-  onAgentCollision(player, agent) {
+
+  onAgentCollision() {
     this.sound.play('sirena');
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-    this.gameState.alertasFBI += 1;
+    this.gameState.alertasFBI++;
+  }
+
+  spawnDocument() {
+    this.documents.create(
+      Phaser.Math.Between(50, 750),
+      Phaser.Math.Between(50, 550),
+      'documento'
+    ).setScale(0.3);
+  }
+
+  spawnTweet() {
+    this.tweets.create(
+      Phaser.Math.Between(50, 750),
+      Phaser.Math.Between(50, 550),
+      'tweet'
+    ).setScale(0.3);
+  }
+
+  spawnTrap() {
+    this.traps.create(
+      Phaser.Math.Between(50, 750),
+      Phaser.Math.Between(50, 550),
+      'trampa'
+    ).setScale(0.3);
   }
 }
 
@@ -374,47 +414,40 @@ class EndScene extends Phaser.Scene {
   }
   
   create() {
-    const endContainer = this.add.container(400, 300);
+    this.add.gradient(400, 300, 800, 600, 0x1a1a1a, 0x4a4a4a);
     
-    const title = this.win ? "¡Ganaste!" : "Juego Terminado";
-    const endText = this.add.text(0, -80, title, {
+    const title = this.win ? '¡MISIÓN CUMPLIDA!' : '¡CAPTURADO!';
+    const color = this.win ? '#0F0' : '#F00';
+    
+    this.add.text(400, 200, title, {
+      fontSize: '48px',
+      fill: color,
+      stroke: '#000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
+    
+    this.add.text(400, 300, `Documentos obtenidos: ${this.finalScore}`, {
       fontSize: '32px',
-      fill: '#000',
-      align: 'center'
-    });
-    endText.setOrigin(0.5);
+      fill: '#FFF'
+    }).setOrigin(0.5);
     
-    const scoreText = this.add.text(0, 0, Documentos recolectados: ${this.finalScore}, {
+    const restart = this.add.text(400, 400, 'Jugar de nuevo', {
       fontSize: '24px',
-      fill: '#000',
-      align: 'center'
-    });
-    scoreText.setOrigin(0.5);
-    
-    const restartButton = this.add.text(0, 80, 'Reiniciar Juego', {
-      fontSize: '24px',
-      fill: '#0f0',
+      fill: '#FF0',
       backgroundColor: '#000',
-      padding: { x: 20, y: 10 }
-    });
-    restartButton.setOrigin(0.5);
-    restartButton.setInteractive({ useHandCursor: true });
-    restartButton.on('pointerdown', () => {
+      padding: 10
+    }).setOrigin(0.5).setInteractive();
+    
+    restart.on('pointerdown', () => {
       this.sound.play('click');
       this.scene.start('StartScene');
     });
-    
-    endContainer.add([endText, scoreText, restartButton]);
   }
 }
 
-// ===================
-// CONFIGURACIÓN DE PHASER (modo responsivo)
-// ===================
 const config = {
   type: Phaser.AUTO,
   parent: 'game-container',
-  backgroundColor: '#fff', // Canvas blanco
   width: 800,
   height: 600,
   scale: {
@@ -428,4 +461,4 @@ const config = {
   scene: [StartScene, GameScene, EndScene]
 };
 
-const game = new Phaser.Game(config);
+new Phaser.Game(config);
