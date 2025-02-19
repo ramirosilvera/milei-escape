@@ -5,7 +5,9 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #111;
+  /* Se usa la imagen de fondo fuera del canvas */
+  background: url('img/fondo.jpeg') no-repeat center center fixed;
+  background-size: cover;
   font-family: Arial, sans-serif;
   height: 100%;
   width: 100%;
@@ -14,15 +16,16 @@ html, body {
   justify-content: center;
 }
 
-/* Contenedor del juego */
+/* Contenedor del juego (canvas) con fondo blanco */
 #game-container {
   width: 800px;
   height: 600px;
-  background: #000;
+  background: #fff;
   position: relative;
+  z-index: 10;
 }
 
-/* Controles táctiles (si se usa en dispositivos móviles) */
+/* Controles táctiles */
 #controls {
   position: absolute;
   bottom: 20px;
@@ -44,7 +47,7 @@ html, body {
   background: rgba(255, 255, 255, 0.8);
   border: none;
   border-radius: 5px;
-  width: 40px;  /* Tamaño reducido */
+  width: 40px;
   height: 40px;
   margin: 5px;
   font-size: 18px;
