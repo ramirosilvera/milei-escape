@@ -5,7 +5,6 @@
 html, body {
   margin: 0;
   padding: 0;
-  /* Fondo global: se muestra la imagen de fondo (fuera del canvas) */
   background: url('img/fondo.jpeg') no-repeat center center fixed;
   background-size: cover;
   font-family: Arial, sans-serif;
@@ -16,11 +15,10 @@ html, body {
   justify-content: center;
 }
 
-/* Contenedor del juego (canvas) con fondo blanco, bordes redondeados y sombra */
 #game-container {
   width: 90vw;
   max-width: 800px;
-  height: calc(90vw * 0.75);  /* Mantiene la relación 4:3 */
+  height: calc(90vw * 0.75);
   max-height: 600px;
   background: #fff;
   position: relative;
@@ -30,7 +28,6 @@ html, body {
   z-index: 10;
 }
 
-/* Controles táctiles (se posicionan sobre el canvas) */
 #controls {
   position: absolute;
   bottom: 20px;
@@ -42,14 +39,12 @@ html, body {
   z-index: 100;
 }
 
-/* Estilo para el grupo central de botones */
 #middle-controls {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Botones de flecha: más grandes, redondos y con degradado */
 .arrow-btn {
   background: linear-gradient(135deg, #6dd5ed, #2193b0);
   border: none;
@@ -69,11 +64,18 @@ html, body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Ajustes para pantallas pequeñas */
 @media (max-width: 600px) {
   .arrow-btn {
     width: 40px;
     height: 40px;
     font-size: 20px;
   }
+}
+
+canvas {
+  pointer-events: none;
+}
+
+.arrow-btn {
+  pointer-events: auto;
 }
