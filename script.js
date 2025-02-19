@@ -50,6 +50,7 @@ class GameState {
     this.apoyo = 100;
     // Contador para impactos de trampas
     this.trapHits = 0;
+    this.documentosRestantes = 15; // Contador de documentos restantes
   }
 }
 
@@ -215,7 +216,16 @@ class GameScene extends Phaser.Scene {
       stroke: '#fff',
       strokeThickness: 3
     });
-    
+
+    // Visor de documentos con cuenta regresiva
+    this.documentCounterText = this.add.text(400, 50, 'Documentos: ' + this.gameState.documentosRestantes, {
+      fontSize: '28px',
+      fill: '#000',
+      fontStyle: 'bold',
+      stroke: '#fff',
+      strokeThickness: 3
+    }).setOrigin(0.5);
+
     // Grupo de documentos (escala 0.3)
     this.documents = this.physics.add.group();
     this.spawnDocument();
@@ -227,205 +237,101 @@ class GameScene extends Phaser.Scene {
     // Grupo de trampas (escala 0.3)
     this.traps = this.physics.add.group();
     this.spawnTrap();
-    this.spawnTrap();
-    
-    // Grupo de agentes del FBI (2 agentes, escala 0.3)
-    this.agents = this.physics.add.group();
-    for (let i = 0; i < 2; i++) {
-      let x = Phaser.Math.Between(100, 700);
-      let y = Phaser.Math.Between(100, 500);
-      let agentSprite = this.physics.add.sprite(x, y, 'fbi').setScale(0.3);
-      agentSprite.ia = new AgentIA(agentSprite);
-      this.agents.add(agentSprite);
-    }
-    
-    // Colisiones e interacciones
-    this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
-    this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
-    this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
-    this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
-    
-    // Controles por teclado
-    this.cursors = this.input.keyboard.createCursorKeys();
-  }
-  
-  update() {
-    const speed = 200;
-    let vx = 0, vy = 0;
-    
-    if (this.cursors.left.isDown) {
-      vx = -speed;
-    } else if (this.cursors.right.isDown) {
-      vx = speed;
-    }
-    if (this.cursors.up.isDown) {
-      vy = -speed;
-    } else if (this.cursors.down.isDown) {
-      vy = speed;
-    }
-    
-    if (touchInput.left) {
-      vx = -speed;
-    } else if (touchInput.right) {
-      vx = speed;
-    }
-    if (touchInput.up) {
-      vy = -speed;
-    } else if (touchInput.down) {
-      vy = speed;
-    }
-    
-    this.player.setVelocity(vx, vy);
-    
-    this.agents.children.iterate((agent) => {
-      if (agent.ia) {
-        agent.ia.update(this.player);
-      }
+
+    // Configurar el movimiento del jugador
+    this.input.keyboard.on('keydown', (event) => {
+      if (event.key === 'ArrowUp') this.player.setVelocityY(-100);
+      else if (event.key === 'ArrowDown') this.player.setVelocityY(100);
+      else if (event.key === 'ArrowLeft') this.player.setVelocityX(-100);
+      else if (event.key === 'ArrowRight') this.player.setVelocityX(100);
+    });
+    this.input.keyboard.on('keyup', (event) => {
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') this.player.setVelocityY(0);
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') this.player.setVelocityX(0);
     });
     
-    this.supportText.setText('Apoyo: ' + this.gameState.apoyo);
-    this.fbiText.setText('FBI: ' + this.gameState.alertasFBI);
-    
-    // Objetivo: recolectar 15 documentos antes de que se agote el apoyo
-    if (this.gameState.evidencias.documentos >= 15) {
-      this.musica.stop();
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: true });
-    } else if (this.gameState.apoyo <= 0) {
-      this.musica.stop();
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false });
-    }
+    // Lógica para la actualización de las alertas del FBI y la cuenta regresiva
+    this.time.addEvent({
+      delay: 5000,
+      callback: () => {
+        this.gameState.alertasFBI += 1;
+        if (this.gameState.documentosRestantes > 0) {
+          this.gameState.documentosRestantes--;
+          this.documentCounterText.setText('Documentos: ' + this.gameState.documentosRestantes);
+        }
+      },
+      loop: true
+    });
   }
-  
+
+  // Función para crear documentos
   spawnDocument() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.documents.create(x, y, 'documento').setScale(0.3);
+    this.documents.create(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'documento').setScale(0.3);
   }
-  
+
+  // Función para crear tweets
   spawnTweet() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.tweets.create(x, y, 'tweet').setScale(0.3);
+    this.tweets.create(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'tweet').setScale(0.3);
   }
-  
+
+  // Función para crear trampas
   spawnTrap() {
-    const x = Phaser.Math.Between(50, 750);
-    const y = Phaser.Math.Between(50, 550);
-    this.traps.create(x, y, 'trampa').setScale(0.3);
+    this.traps.create(Phaser.Math.Between(100, 700), Phaser.Math.Between(100, 500), 'trampa').setScale(0.3);
   }
-  
+
+  update() {
+    // Verifica si Milei ha tocado algún documento
+    this.physics.overlap(this.player, this.documents, this.collectDocument, null, this);
+    this.physics.overlap(this.player, this.traps, this.hitTrap, null, this);
+    this.physics.overlap(this.player, this.tweets, this.collectTweet, null, this);
+  }
+
   collectDocument(player, document) {
-    document.disableBody(true, true);
-    this.gameState.evidencias.documentos += 1;
-    this.sound.play('coin');
-    // Cada documento recolectado genera un nuevo documento y una trampa
-    this.spawnDocument();
-    this.spawnTrap();
-  }
-  
-  collectTweet(player, tweet) {
-    tweet.disableBody(true, true);
-    this.sound.play('notification');
-    const isPositive = Phaser.Math.Between(0, 1) === 0;
-    if (isPositive) {
+    document.destroy();
+    this.gameState.documentosRestantes--;
+    this.documentCounterText.setText('Documentos: ' + this.gameState.documentosRestantes);
+    if (this.gameState.documentosRestantes <= 0) {
       this.gameState.apoyo += 10;
-      showTempMessage(this, "Ratas inmundas de la casta política", "#0f0");
-    } else {
-      this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-      showTempMessage(this, "No estaba interiorizado de los pormenores del proyecto", "#f00");
     }
-    this.spawnTweet();
   }
-  
+
   hitTrap(player, trap) {
-    trap.disableBody(true, true);
-    // La trampa reduce 15 puntos de apoyo
-    this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
-    showTempMessage(this, "¡Trampa activada!", "#f80");
-    
-    // Cada 3 impactos de trampa se añade 1 alerta FBI y se reinicia el contador
-    this.gameState.trapHits += 1;
-    if (this.gameState.trapHits >= 3) {
-      this.gameState.alertasFBI += 1;
-      this.gameState.trapHits = 0;
+    trap.destroy();
+    this.gameState.apoyo -= 10;
+    this.gameState.trapHits++;
+    if (this.gameState.apoyo <= 0) {
+      this.gameOver();
     }
-    
-    this.time.delayedCall(2000, () => { this.spawnTrap(); });
   }
-  
-  onAgentCollision(player, agent) {
-    this.sound.play('sirena');
-    this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-    this.gameState.alertasFBI += 1;
+
+  collectTweet(player, tweet) {
+    tweet.destroy();
+    const chance = Phaser.Math.Between(0, 1);
+    if (chance > 0.5) {
+      this.gameState.apoyo += 20;
+    } else {
+      this.gameState.apoyo -= 20;
+    }
+  }
+
+  gameOver() {
+    this.musica.stop();
+    this.scene.start('StartScene');
   }
 }
 
-// ===================
-// SCENA DE FIN
-// ===================
-class EndScene extends Phaser.Scene {
-  constructor() {
-    super('EndScene');
-  }
-  
-  init(data) {
-    this.finalScore = data.score || 0;
-    this.win = data.win || false;
-  }
-  
-  create() {
-    const endContainer = this.add.container(400, 300);
-    
-    const title = this.win ? "¡Ganaste!" : "Juego Terminado";
-    const endText = this.add.text(0, -80, title, {
-      fontSize: '32px',
-      fill: '#000',
-      align: 'center'
-    });
-    endText.setOrigin(0.5);
-    
-    const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
-      fontSize: '24px',
-      fill: '#000',
-      align: 'center'
-    });
-    scoreText.setOrigin(0.5);
-    
-    const restartButton = this.add.text(0, 80, 'Reiniciar Juego', {
-      fontSize: '24px',
-      fill: '#0f0',
-      backgroundColor: '#000',
-      padding: { x: 20, y: 10 }
-    });
-    restartButton.setOrigin(0.5);
-    restartButton.setInteractive({ useHandCursor: true });
-    restartButton.on('pointerdown', () => {
-      this.sound.play('click');
-      this.scene.start('StartScene');
-    });
-    
-    endContainer.add([endText, scoreText, restartButton]);
-  }
-}
-
-// ===================
-// CONFIGURACIÓN DE PHASER (modo responsivo)
-// ===================
 const config = {
   type: Phaser.AUTO,
-  parent: 'game-container',
-  backgroundColor: '#fff', // Canvas blanco
   width: 800,
   height: 600,
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
+  scene: [StartScene, GameScene],
   physics: {
     default: 'arcade',
-    arcade: { debug: false }
-  },
-  scene: [StartScene, GameScene, EndScene]
+    arcade: {
+      gravity: { y: 0 },
+      debug: false
+    }
+  }
 };
 
 const game = new Phaser.Game(config);
