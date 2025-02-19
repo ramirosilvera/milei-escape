@@ -29,14 +29,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 class GameState {
   constructor() {
-    this.nivel = 1;
     this.totalDocumentos = 15;
-    this.evidencias = {
-      documentos: 0,
-    };
+    this.evidencias = { documentos: 0 };
     this.alertasFBI = 0;
     this.apoyo = 100;
     this.trapHits = 0;
+    this.caught = false;
   }
   
   get documentosRestantes() {
@@ -101,7 +99,6 @@ class StartScene extends Phaser.Scene {
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
-    this.load.image('moneda', 'img/moneda.png');
     this.load.image('trampa', 'img/trampa.png');
     this.load.image('tweet', 'img/tweet.png');
     this.load.audio('click', 'sounds/click.wav');
@@ -114,40 +111,49 @@ class StartScene extends Phaser.Scene {
   create() {
     const startContainer = this.add.container(400, 300);
     
-    // Texto del título
-    const titleText = this.add.text(0, -150, 'Milei vs. El FBI\nLa estafa de Libra', {
-      fontSize: '32px',
-      fill: '#000',
+    const titleText = this.add.text(0, -180, 'Milei vs. El FBI\nLa estafa de Libra', {
+      fontSize: '36px',
+      fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold',
-      lineSpacing: 15
+      lineSpacing: 20
     }).setOrigin(0.5);
-    
-    // Texto de introducción actualizado
-    const introText = this.add.text(0, -50, 
+
+    const introText = this.add.text(0, -30, 
       '40 inversores denunciaron a Milei ante el FBI\npor estafa con la criptomoneda Libra.\n\n¡Ayúdalo a esconder 15 documentos clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
       {
-        fontSize: '18px',
-        fill: '#444',
+        fontSize: '20px',
+        fill: '#2c3e50',
         align: 'center',
-        lineSpacing: 12
+        lineSpacing: 15,
+        backgroundColor: '#ffffff',
+        padding: { x: 20, y: 15 },
+        borderRadius: 10
       }
     ).setOrigin(0.5);
-    
-    // Botón de inicio
-    const startButton = this.add.text(0, 100, 'Iniciar Juego', {
-      fontSize: '24px',
-      fill: '#0f0',
-      backgroundColor: '#000',
-      padding: { x: 20, y: 10 }
+
+    const startButton = this.add.text(0, 150, 'Iniciar Juego', {
+      fontSize: '28px',
+      fill: '#ffffff',
+      backgroundColor: '#27ae60',
+      padding: { x: 30, y: 15 },
+      borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    
+
+    startButton.on('pointerover', () => {
+      startButton.setBackgroundColor('#219a52');
+    });
+
+    startButton.on('pointerout', () => {
+      startButton.setBackgroundColor('#27ae60');
+    });
+
     startButton.on('pointerdown', () => {
       touchInput = { up: false, down: false, left: false, right: false };
       this.sound.play('click');
       this.scene.start('GameScene');
     });
-    
+
     startContainer.add([titleText, introText, startButton]);
   }
 }
@@ -178,8 +184,10 @@ class GameScene extends Phaser.Scene {
       loop: true
     });
     
-    // Creación del jugador
-    this.player = this.physics.add.sprite(400, 300, 'milei').setScale(0.3).setCollideWorldBounds(true);
+    // Jugador
+    this.player = this.physics.add.sprite(400, 300, 'milei')
+      .setScale(0.3)
+      .setCollideWorldBounds(true);
     
     // UI
     this.supportText = this.add.text(10, 10, 'APOYO: ', {
@@ -210,13 +218,17 @@ class GameScene extends Phaser.Scene {
     this.spawnTrap();
     this.spawnTrap();
     
-    // Creación de agentes
+    // Agentes del FBI
     for (let i = 0; i < 2; i++) {
-      let agentSprite = this.physics.add.sprite(
+      const agentSprite = this.physics.add.sprite(
         Phaser.Math.Between(100, 700),
         Phaser.Math.Between(100, 500),
         'fbi'
-      ).setScale(0.3).setCollideWorldBounds(true).setBounce(0.5);
+      )
+      .setScale(0.3)
+      .setCollideWorldBounds(true)
+      .setBounce(0.5);
+      
       agentSprite.ia = new AgentIA(agentSprite);
       this.agents.add(agentSprite);
     }
@@ -232,6 +244,8 @@ class GameScene extends Phaser.Scene {
   }
   
   update() {
+    if (this.gameState.caught) return;
+    
     const speed = 200;
     let vx = 0, vy = 0;
     
@@ -330,15 +344,20 @@ class GameScene extends Phaser.Scene {
   }
   
   onAgentCollision(player, agent) {
-    if (this.isInvulnerable) return;
+    if (this.isInvulnerable || this.gameState.caught) return;
     this.isInvulnerable = true;
+    this.gameState.caught = true;
     
     this.sound.play('sirena');
-    this.gameState.apoyo = Math.max(this.gameState.apoyo - 10, 0);
-    this.gameState.alertasFBI++;
+    this.gameState.apoyo = 0;
+    showTempMessage(this, "¡Fuiste atrapado por el FBI!", "#ff0000");
     
-    this.time.delayedCall(1000, () => {
-      this.isInvulnerable = false;
+    this.time.delayedCall(2000, () => {
+      this.scene.start('EndScene', { 
+        score: this.gameState.evidencias.documentos,
+        win: false,
+        caught: true
+      });
     });
   }
   
@@ -359,30 +378,47 @@ class EndScene extends Phaser.Scene {
   init(data) {
     this.finalScore = data.score || 0;
     this.win = data.win || false;
+    this.caught = data.caught || false;
   }
   
   create() {
     const endContainer = this.add.container(400, 300);
-    const title = this.win ? "¡Ganaste!" : "Juego Terminado";
     
-    const endText = this.add.text(0, -80, title, {
+    let titleText;
+    if (this.caught) {
+      titleText = "¡Fuiste atrapado!";
+    } else {
+      titleText = this.win ? "¡Victoria!" : "¡Derrota!";
+    }
+    
+    const endText = this.add.text(0, -80, titleText, {
       fontSize: '32px',
-      fill: '#000',
-      align: 'center'
+      fill: '#2c3e50',
+      align: 'center',
+      fontStyle: 'bold'
     }).setOrigin(0.5);
     
     const scoreText = this.add.text(0, 0, `Documentos recolectados: ${this.finalScore}`, {
       fontSize: '24px',
-      fill: '#000',
+      fill: '#34495e',
       align: 'center'
     }).setOrigin(0.5);
     
-    const restartButton = this.add.text(0, 80, 'Reiniciar Juego', {
+    const restartButton = this.add.text(0, 80, 'Jugar de nuevo', {
       fontSize: '24px',
-      fill: '#0f0',
-      backgroundColor: '#000',
-      padding: { x: 20, y: 10 }
+      fill: '#ffffff',
+      backgroundColor: '#27ae60',
+      padding: { x: 30, y: 15 },
+      borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    restartButton.on('pointerover', () => {
+      restartButton.setBackgroundColor('#219a52');
+    });
+    
+    restartButton.on('pointerout', () => {
+      restartButton.setBackgroundColor('#27ae60');
+    });
     
     restartButton.on('pointerdown', () => {
       this.sound.play('click');
@@ -405,12 +441,17 @@ const config = {
   },
   physics: {
     default: 'arcade',
-    arcade: { debug: false }
+    arcade: { 
+      debug: false,
+      gravity: { y: 0 }
+    }
   },
   scene: [StartScene, GameScene, EndScene],
   input: {
     activePointers: 3,
-    touch: { capture: false }
+    touch: { 
+      capture: false 
+    }
   }
 };
 
