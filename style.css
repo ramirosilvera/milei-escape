@@ -14,7 +14,7 @@ html, body {
   justify-content: center;
 }
 
-/* Contenedor principal del juego */
+/* Contenedor del juego */
 #game-container {
   width: 800px;
   height: 600px;
@@ -22,7 +22,7 @@ html, body {
   position: relative;
 }
 
-/* Botones de controles táctiles */
+/* Controles táctiles (si se usa en dispositivos móviles) */
 #controls {
   position: absolute;
   bottom: 20px;
