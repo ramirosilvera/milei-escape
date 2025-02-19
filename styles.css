@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #ecf0f1;
+}
+
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    background: #fff;
+    border: 2px solid #000;
+}
+
+#controls {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.arrow-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.arrow-btn:active {
+    background-color: #2980b9;
+}
+
+.horizontal-buttons {
+    display: flex;
+    gap: 10px;
+}
