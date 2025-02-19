@@ -28,9 +28,9 @@ html, body {
   overflow: hidden;
 }
 
-/* Controles táctiles */
+/* Controles reposicionados */
 #controls {
-  position: absolute;
+  position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
@@ -67,23 +67,29 @@ html, body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Notificaciones superiores */
-.notification-top {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 18px;
-  font-weight: bold;
+/* Pantalla de inicio mejorada */
+.start-container {
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  z-index: 200;
-  white-space: nowrap;
-  pointer-events: none;
+  padding: 20px;
+  max-width: 600px;
+}
+
+.game-title {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.game-intro {
+  font-size: 1.1rem;
+  color: #34495e;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  background: rgba(255,255,255,0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 /* Contador de documentos */
@@ -127,49 +133,42 @@ html, body {
   color: #c0392b;
 }
 
-/* Responsive Design */
+/* Notificaciones */
+.notification-top {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 @media (max-width: 600px) {
+  .game-title {
+    font-size: 2rem;
+  }
+  
+  .game-intro {
+    font-size: 1rem;
+    padding: 15px;
+  }
+  
   .arrow-btn {
     width: 50px;
     height: 50px;
     font-size: 20px;
   }
-
-  .notification-top {
-    font-size: 16px;
-    padding: 10px 20px;
-  }
-
+  
   .document-counter {
     font-size: 20px;
-    padding: 6px 16px;
   }
-
-  .status-indicator {
-    font-size: 18px;
-    padding: 6px 12px;
-  }
-}
-
-@media (max-width: 400px) {
-  .arrow-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-
-  #middle-controls {
-    gap: 10px;
-  }
-}
-
-/* Animaciones */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.pulsing {
-  animation: pulse 1.5s infinite;
 }
