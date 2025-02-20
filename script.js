@@ -45,7 +45,8 @@ class GameState {
     this.apoyo = 100;
     this.trapHits = 0;
     this.caught = false;
-    this.agentCount = 2;
+    // Inicio con 1 agente y se irá incrementando conforme aumenten las alertas
+    this.agentCount = 1;
   }
   
   get documentosRestantes() {
@@ -53,6 +54,7 @@ class GameState {
   }
   
   aumentarDificultad() {
+    // Limita el número de agentes a 6
     this.agentCount = Math.min(6, this.agentCount + 1);
   }
 }
@@ -66,6 +68,19 @@ class AgentIA {
   }
   
   update(target) {
+    // Durante los primeros 5 segundos, no se activa la persecución.
+    if (this.sprite.scene.time.now < this.sprite.scene.chaseEnabledTime) {
+      if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
+        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
+        this.sprite.setVelocity(
+          Math.cos(angle) * 50,
+          Math.sin(angle) * 50
+        );
+        this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
+      }
+      return;
+    }
+    
     const distance = Phaser.Math.Distance.Between(
       this.sprite.x, this.sprite.y, target.x, target.y
     );
@@ -184,11 +199,19 @@ class GameScene extends Phaser.Scene {
   
   create() {
     this.gameState = new GameState();
-    // Música con volumen reducido al 30%
+    // Reproduce la música de fondo con volumen reducido
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.3 });
     
     this.createUI();
     this.createPlayer();
+    
+    // Se establece un retraso de 5 segundos para que los agentes no persigan y el jugador sea invulnerable.
+    this.chaseEnabledTime = this.time.now + 5000;
+    this.isInvulnerable = true;
+    this.time.delayedCall(5000, () => {
+      this.isInvulnerable = false;
+    });
+    
     this.initGroups();
     this.spawnInitialObjects();
     this.setupCollisions();
@@ -236,6 +259,7 @@ class GameScene extends Phaser.Scene {
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
     
+    // Se crean agentes según el valor inicial en gameState.agentCount (ahora 1)
     for (let i = 0; i < this.gameState.agentCount; i++) {
       this.createAgent();
     }
@@ -423,88 +447,4 @@ class EndScene extends Phaser.Scene {
     const endContainer = this.add.container(400, 300);
     
     const background = this.add.rectangle(0, 0, 600, 400, 0xffffff, 0.95)
-      .setOrigin(0.5)
-      .setStrokeStyle(2, 0x000000);
-    
-    let titleText, messageText;
-    if (this.caught) {
-      titleText = "¡Fuiste atrapado!";
-      messageText = "El FBI te capturó con las manos en la masa.\nTu popularidad cayó a 0.";
-    } else if (this.win) {
-      titleText = "¡Victoria!";
-      messageText = "Lograste esconder las evidencias y engañar\nal FBI y al pueblo.";
-    } else {
-      titleText = "¡Derrota!";
-      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos las evidencias.";
-    }
-    
-    const title = this.add.text(0, -80, titleText, {
-      fontSize: '36px',
-      fill: '#2c3e50',
-      align: 'center',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-    
-    const message = this.add.text(0, 0, messageText, {
-      fontSize: '24px',
-      fill: '#34495e',
-      align: 'center',
-      lineSpacing: 15
-    }).setOrigin(0.5);
-    
-    const scoreText = this.add.text(0, 80, `Evidencias escondidas: ${this.finalScore}`, {
-      fontSize: '24px',
-      fill: '#34495e',
-      align: 'center'
-    }).setOrigin(0.5);
-    
-    const restartButton = this.add.text(0, 140, 'Jugar de nuevo', {
-      fontSize: '28px',
-      fill: '#ffffff',
-      backgroundColor: '#27ae60',
-      padding: { x: 30, y: 15 },
-      borderRadius: 15
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    
-    restartButton.on('pointerover', () => restartButton.setBackgroundColor('#219a52'));
-    restartButton.on('pointerout', () => restartButton.setBackgroundColor('#27ae60'));
-    restartButton.on('pointerdown', () => {
-      this.sound.play('click');
-      this.scene.start('StartScene');
-    });
-
-    endContainer.add([background, title, message, scoreText, restartButton]);
-  }
-}
-
-const config = {
-  type: Phaser.AUTO,
-  parent: 'game-container',
-  backgroundColor: '#fff',
-  width: 800,
-  height: 600,
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-  physics: {
-    default: 'arcade',
-    arcade: { 
-      debug: false,
-      gravity: { y: 0 }
-    }
-  },
-  scene: [StartScene, GameScene, EndScene],
-  input: {
-    activePointers: 3,
-    touch: { 
-      capture: false 
-    }
-  },
-  // Habilitar el contenedor DOM para mostrar las notificaciones (tweets)
-  dom: {
-    createContainer: true
-  }
-};
-
-new Phaser.Game(config);
+      .setOrigi
