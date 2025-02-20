@@ -89,7 +89,8 @@ class AgentIA {
 }
 
 function showTempMessage(scene, textContent, color = '#fff') {
-  const msg = scene.add.dom(400, 50).createFromHTML(`
+  const x = scene.cameras.main.centerX;
+  const msg = scene.add.dom(x, 50).createFromHTML(`
     <div class="notification-top" style="color: ${color}">
       ${textContent}
     </div>
@@ -123,32 +124,39 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    const startContainer = this.add.container(400, 300);
+    // Desbloquea el audio en móviles tras el primer toque
+    this.input.once('pointerdown', () => {
+      if (this.sound.context.state !== 'running') {
+        this.sound.context.resume();
+      }
+    });
+    
+    const startContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
     
     const background = this.add.rectangle(0, 0, 600, 400, 0xffffff, 0.95)
       .setOrigin(0.5)
       .setStrokeStyle(2, 0x000000);
     
-    const titleText = this.add.text(0, -120, 'Milei vs. El FBI\nLa estafa de Libra', {
+    const titleText = this.add.text(0, -150, 'Milei vs. El FBI\nLa estafa de Libra', {
       fontSize: '36px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold',
-      lineSpacing: 20
+      lineSpacing: 10
     }).setOrigin(0.5);
 
-    const introText = this.add.text(0, -20, 
-      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la criptomoneda Libra.\n\n¡Ayúdalo a esconder 15 documentos clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
+    const introText = this.add.text(0, -30, 
+      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
       {
-        fontSize: '18px',
+        fontSize: '20px',
         fill: '#34495e',
         align: 'center',
-        lineSpacing: 12,
-        wordWrap: { width: 500 }
+        lineSpacing: 10,
+        wordWrap: { width: 550 }
       }
     ).setOrigin(0.5);
 
-    const startButton = this.add.text(0, 140, 'Iniciar Juego', {
+    const startButton = this.add.text(0, 100, 'Iniciar Juego', {
       fontSize: '28px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
@@ -176,7 +184,8 @@ class GameScene extends Phaser.Scene {
   
   create() {
     this.gameState = new GameState();
-    this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.5 });
+    // Música con volumen reducido al 30%
+    this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.3 });
     
     this.createUI();
     this.createPlayer();
@@ -196,12 +205,12 @@ class GameScene extends Phaser.Scene {
       padding: { x: 15, y: 10 }
     };
     
-    this.documentCounter = this.add.text(20, 20, 'DOCUMENTOS: 15/15', {
+    this.documentCounter = this.add.text(20, 20, 'EVIDENCIAS: 15/15', {
       ...style,
       fill: '#2c3e50'
     }).setOrigin(0);
     
-    this.supportText = this.add.text(20, 60, 'APOYO: 100', {
+    this.supportText = this.add.text(20, 60, 'POPULARIDAD: 100', {
       ...style,
       fill: '#27ae60'
     }).setOrigin(0);
@@ -342,7 +351,7 @@ class GameScene extends Phaser.Scene {
     const isPositive = Phaser.Math.Between(0, 1) === 0;
     this.gameState.apoyo += isPositive ? 10 : -10;
     showTempMessage(this, 
-      isPositive ? "Ratas inmundas de la casta política" : "No estaba interiorizado",
+      isPositive ? "Ratas inmundas de la casta política" : "No estaba interiorizado...",
       isPositive ? "#0f0" : "#f00"
     );
     this.spawnTweet();
@@ -373,6 +382,8 @@ class GameScene extends Phaser.Scene {
   onAgentCollision(player, agent) {
     if (this.isInvulnerable || this.gameState.caught) return;
     
+    // Pausar la física para evitar bloqueos
+    this.physics.pause();
     this.gameState.caught = true;
     this.sound.play('sirena');
     this.musica.stop();
@@ -424,7 +435,7 @@ class EndScene extends Phaser.Scene {
       messageText = "Lograste esconder las evidencias y engañar\nal FBI y al pueblo.";
     } else {
       titleText = "¡Derrota!";
-      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos los documentos.";
+      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos las evidencias.";
     }
     
     const title = this.add.text(0, -80, titleText, {
@@ -441,7 +452,7 @@ class EndScene extends Phaser.Scene {
       lineSpacing: 15
     }).setOrigin(0.5);
     
-    const scoreText = this.add.text(0, 80, `Documentos recolectados: ${this.finalScore}`, {
+    const scoreText = this.add.text(0, 80, `Evidencias escondidas: ${this.finalScore}`, {
       fontSize: '24px',
       fill: '#34495e',
       align: 'center'
@@ -489,6 +500,10 @@ const config = {
     touch: { 
       capture: false 
     }
+  },
+  // Habilitar el contenedor DOM para mostrar las notificaciones (tweets)
+  dom: {
+    createContainer: true
   }
 };
 
