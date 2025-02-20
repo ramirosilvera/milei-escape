@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     controls.addEventListener('touchstart', handleTouchEvent, { passive: false });
     controls.addEventListener('touchend', handleTouchEvent);
     controls.addEventListener('touchcancel', handleTouchEvent);
-
     ['mousedown', 'mouseup', 'mouseleave'].forEach(eventType => {
       controls.addEventListener(eventType, (e) => {
         e.preventDefault();
@@ -63,7 +62,6 @@ class AgentIA {
       return;
     }
     
-    // Una vez transcurrido el tiempo, se activa el modo CHASE si está cerca.
     const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, target.x, target.y);
     this.currentState = (distance < 200) ? this.states.CHASE : this.states.PATROL;
     
@@ -125,20 +123,20 @@ class StartScene extends Phaser.Scene {
       .setStrokeStyle(2, 0x000000);
     
     // Título, subtítulo, introducción y botón, con mayor separación y fuente reducida.
-    this.add.text(400, 80, 'Milei vs. El FBI', {
+    this.add.text(400, 200, 'Milei vs. El FBI', {
       fontSize: '28px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     
-    this.add.text(400, 120, 'La estafa de Libra', {
+    this.add.text(400, 240, 'La estafa de Libra', {
       fontSize: '24px',
       fill: '#2c3e50',
       align: 'center'
     }).setOrigin(0.5);
     
-    this.add.text(400, 180, 
+    this.add.text(400, 270, 
       '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y mantén el apoyo popular.',
       {
         fontSize: '16px',
@@ -149,7 +147,7 @@ class StartScene extends Phaser.Scene {
       }
     ).setOrigin(0.5);
     
-    const startButton = this.add.text(400, 300, 'Iniciar Juego', {
+    const startButton = this.add.text(400, 370, 'Iniciar Juego', {
       fontSize: '24px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
@@ -182,7 +180,7 @@ class GameScene extends Phaser.Scene {
     this.createUI();
     this.createPlayer();
     
-    // Los primeros 5 segundos, los agentes no persiguen y el jugador es invulnerable.
+    // Los primeros 5 segundos: no persiguen y el jugador es invulnerable.
     this.chaseEnabledTime = this.time.now + 5000;
     this.isInvulnerable = true;
     this.time.delayedCall(5000, () => { this.isInvulnerable = false; });
@@ -192,7 +190,6 @@ class GameScene extends Phaser.Scene {
     this.setupCollisions();
     this.setupTimers();
   }
-  
   createUI() {
     this.uiContainer = this.add.container(0, 0);
     const style = {
@@ -206,25 +203,21 @@ class GameScene extends Phaser.Scene {
     this.fbiText = this.add.text(20, 80, 'ALERTAS: 0', { ...style, fill: '#c0392b' }).setOrigin(0);
     this.uiContainer.add([this.documentCounter, this.supportText, this.fbiText]);
   }
-  
   createPlayer() {
     this.player = this.physics.add.sprite(400, 300, 'milei')
       .setScale(0.3)
       .setCollideWorldBounds(true);
     this.cursors = this.input.keyboard.createCursorKeys();
   }
-  
   initGroups() {
     this.documents = this.physics.add.group();
     this.tweets = this.physics.add.group();
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
-    // Crear agentes según el valor inicial (1)
     for (let i = 0; i < this.gameState.agentCount; i++) {
       this.createAgent();
     }
   }
-  
   createAgent() {
     const agent = this.physics.add.sprite(
       Phaser.Math.Between(100, 700),
@@ -237,21 +230,18 @@ class GameScene extends Phaser.Scene {
     agent.ia = new AgentIA(agent);
     this.agents.add(agent);
   }
-  
   spawnInitialObjects() {
     this.spawnDocument();
     this.spawnTweet();
     this.spawnTrap();
     this.spawnTrap();
   }
-  
   setupCollisions() {
     this.physics.add.overlap(this.player, this.documents, this.collectDocument, null, this);
     this.physics.add.overlap(this.player, this.tweets, this.collectTweet, null, this);
     this.physics.add.overlap(this.player, this.traps, this.hitTrap, null, this);
     this.physics.add.overlap(this.player, this.agents, this.onAgentCollision, null, this);
   }
-  
   setupTimers() {
     this.apoyoTimer = this.time.addEvent({
       delay: 1000,
@@ -263,7 +253,6 @@ class GameScene extends Phaser.Scene {
       loop: true
     });
   }
-  
   update() {
     if (this.gameEnded) return;
     const speed = 200;
@@ -275,16 +264,13 @@ class GameScene extends Phaser.Scene {
     
     this.player.setVelocity(vx, vy);
     this.agents.getChildren().forEach(agent => agent.ia.update(this.player));
-    
     if (!this.gameEnded && this.gameState.evidencias.documentos >= 15) { this.endGame(true); }
   }
-  
   updateUI() {
     this.documentCounter.setText(`EVIDENCIAS: ${this.gameState.documentosRestantes}/15`);
     this.supportText.setText(`POPULARIDAD: ${Math.max(this.gameState.apoyo, 0)}`);
     this.fbiText.setText(`ALERTAS: ${this.gameState.alertasFBI}`);
   }
-  
   spawnDocument() {
     this.documents.create(
       Phaser.Math.Between(50, 750),
@@ -292,7 +278,6 @@ class GameScene extends Phaser.Scene {
       'documento'
     ).setScale(0.3);
   }
-  
   spawnTweet() {
     this.tweets.create(
       Phaser.Math.Between(50, 750),
@@ -300,7 +285,6 @@ class GameScene extends Phaser.Scene {
       'tweet'
     ).setScale(0.3);
   }
-  
   spawnTrap() {
     this.traps.create(
       Phaser.Math.Between(50, 750),
@@ -308,7 +292,6 @@ class GameScene extends Phaser.Scene {
       'trampa'
     ).setScale(0.3);
   }
-  
   collectDocument(player, document) {
     document.disableBody(true, true);
     this.gameState.evidencias.documentos++;
@@ -319,11 +302,10 @@ class GameScene extends Phaser.Scene {
       duration: 200,
       yoyo: true
     });
+    // Al recoger documentos, solo se genera un nuevo documento (no se generan trampas)
     this.spawnDocument();
-    this.spawnTrap();
     this.updateUI();
   }
-  
   collectTweet(player, tweet) {
     tweet.disableBody(true, true);
     this.sound.play('notification');
@@ -333,7 +315,6 @@ class GameScene extends Phaser.Scene {
     this.spawnTweet();
     this.updateUI();
   }
-  
   hitTrap(player, trap) {
     trap.disableBody(true, true);
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
@@ -348,13 +329,15 @@ class GameScene extends Phaser.Scene {
       this.createAgent();
       showTempMessage(this, "¡Refuerzos del FBI!", "#ff0000");
     }
-    this.time.delayedCall(2000, () => this.spawnTrap());
+    // En lugar de 1, ahora se generan 2 trampas nuevas tras la colisión con una trampa.
+    this.time.delayedCall(2000, () => {
+      this.spawnTrap();
+      this.spawnTrap();
+    });
     this.updateUI();
   }
-  
   onAgentCollision(player, agent) {
     if (this.isInvulnerable || this.gameEnded) return;
-    // Marcar el fin del juego y lanzar transición sin pausar la física.
     this.gameEnded = true;
     this.sound.play('sirena');
     this.musica.stop();
@@ -363,7 +346,6 @@ class GameScene extends Phaser.Scene {
       this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false, caught: true });
     });
   }
-  
   endGame(win) {
     if (this.gameEnded) return;
     this.gameEnded = true;
@@ -381,11 +363,9 @@ class EndScene extends Phaser.Scene {
     this.caught = data.caught || false;
   }
   create() {
-    // Fondo de la pantalla de fin.
     this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
     
-    // Título y mensaje con separación y fuente reducida.
     let titleText, messageText;
     if (this.caught) {
       titleText = "¡Fuiste atrapado!";
@@ -442,14 +422,8 @@ const config = {
   backgroundColor: '#fff',
   width: 800,
   height: 600,
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-  physics: {
-    default: 'arcade',
-    arcade: { debug: false, gravity: { y: 0 } }
-  },
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  physics: { default: 'arcade', arcade: { debug: false, gravity: { y: 0 } } },
   scene: [StartScene, GameScene, EndScene],
   input: { activePointers: 3, touch: { capture: false } },
   dom: { createContainer: true }
