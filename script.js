@@ -1,4 +1,6 @@
-// --- Global Touch Input ---
+// ---------------------
+// Global Touch Input
+// ---------------------
 let touchInput = { up: false, down: false, left: false, right: false };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- Game State ---
+// ---------------------
+// Game State
+// ---------------------
 class GameState {
   constructor() { this.reset(); }
   reset() {
@@ -36,14 +40,16 @@ class GameState {
     this.apoyo = 100;
     this.trapHits = 0;
     this.caught = false;
-    // Inicia con 1 agente; se incrementa conforme aumentan las alertas.
+    // Inicia con 1 agente, se incrementa conforme aumentan las alertas
     this.agentCount = 1;
   }
   get documentosRestantes() { return this.totalDocumentos - this.evidencias.documentos; }
   aumentarDificultad() { this.agentCount = Math.min(6, this.agentCount + 1); }
 }
 
-// --- Inteligencia de los agentes ---
+// ---------------------
+// AgentIA – Inteligencia del FBI
+// ---------------------
 class AgentIA {
   constructor(sprite) {
     this.sprite = sprite;
@@ -52,8 +58,8 @@ class AgentIA {
     this.baseSpeed = 100;
   }
   update(target) {
-    // Durante los primeros 5 segundos, los agentes solo patrullan.
-    if (this.sprite.scene.time.now < this.sprite.scene.chaseEnabledTime) {
+    // Si no se ha activado "trampa", el agente patrulla siempre, sin importar la distancia.
+    if (!this.sprite.scene.trapActivated) {
       if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
         const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
         this.sprite.setVelocity(Math.cos(angle) * 50, Math.sin(angle) * 50);
@@ -61,24 +67,15 @@ class AgentIA {
       }
       return;
     }
-    
-    const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, target.x, target.y);
-    this.currentState = (distance < 200) ? this.states.CHASE : this.states.PATROL;
-    
-    if (this.currentState === this.states.CHASE) {
-      const speed = this.baseSpeed + (this.sprite.scene.gameState.alertasFBI * 10);
-      this.sprite.scene.physics.moveToObject(this.sprite, target, speed);
-    } else {
-      if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
-        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
-        this.sprite.setVelocity(Math.cos(angle) * 50, Math.sin(angle) * 50);
-        this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
-      }
-    }
+    // Si el jugador cae en una trampa (trapActivated === true), se activa el modo chase
+    const speed = this.baseSpeed + (this.sprite.scene.gameState.alertasFBI * 10);
+    this.sprite.scene.physics.moveToObject(this.sprite, target, speed);
   }
 }
 
-// --- Mensajes temporales ---
+// ---------------------
+// Mensajes Temporales
+// ---------------------
 function showTempMessage(scene, textContent, color = '#fff') {
   const x = scene.cameras.main.centerX;
   const msg = scene.add.dom(x, 50).createFromHTML(`
@@ -96,11 +93,13 @@ function showTempMessage(scene, textContent, color = '#fff') {
   });
 }
 
-// --- Pantalla de Inicio ---
+// ---------------------
+// StartScene – Pantalla de Inicio
+// ---------------------
 class StartScene extends Phaser.Scene {
   constructor() { super('StartScene'); }
   preload() {
-    // Se cargan los assets necesarios.
+    // Cargar assets necesarios
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
@@ -113,30 +112,26 @@ class StartScene extends Phaser.Scene {
     this.load.audio('sirena', 'sounds/sirena.wav');
   }
   create() {
-    // Desbloqueo de audio en móviles.
+    // Desbloqueo de audio en móviles
     this.input.once('pointerdown', () => {
       if (this.sound.context.state !== 'running') { this.sound.context.resume(); }
     });
-    
-    // Fondo de la pantalla de inicio.
+    // Fondo de la pantalla de inicio
     this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
-    
-    // Título, subtítulo, introducción y botón, con mayor separación y fuente reducida.
-    this.add.text(400, 200, 'Milei vs. El FBI', {
+    // Título, subtítulo e introducción con mayor separación y fuente reducida
+    this.add.text(400, 150, 'Milei vs. El FBI', {
       fontSize: '28px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
-    
-    this.add.text(400, 240, 'La estafa de Libra', {
+    this.add.text(400, 170, 'La estafa de Libra', {
       fontSize: '24px',
       fill: '#2c3e50',
       align: 'center'
     }).setOrigin(0.5);
-    
-    this.add.text(400, 270, 
+    this.add.text(400, 200, 
       '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y mantén el apoyo popular.',
       {
         fontSize: '16px',
@@ -146,15 +141,13 @@ class StartScene extends Phaser.Scene {
         wordWrap: { width: 550 }
       }
     ).setOrigin(0.5);
-    
-    const startButton = this.add.text(400, 370, 'Iniciar Juego', {
+    const startButton = this.add.text(400, 350, 'Iniciar Juego', {
       fontSize: '24px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
       padding: { x: 25, y: 10 },
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    
     startButton.on('pointerover', () => startButton.setBackgroundColor('#219a52'));
     startButton.on('pointerout', () => startButton.setBackgroundColor('#27ae60'));
     startButton.on('pointerdown', () => {
@@ -165,26 +158,26 @@ class StartScene extends Phaser.Scene {
   }
 }
 
-// --- Pantalla del Juego ---
+// ---------------------
+// GameScene – Pantalla del Juego
+// ---------------------
 class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
     this.isInvulnerable = false;
     this.gameEnded = false;
+    this.trapActivated = false; // Flag para indicar si se activó una trampa
   }
   create() {
     this.gameState = new GameState();
-    // Música de fondo con volumen reducido.
+    // Inicia la música de fondo
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.3 });
-    
     this.createUI();
     this.createPlayer();
-    
-    // Los primeros 5 segundos: no persiguen y el jugador es invulnerable.
+    // Durante los primeros 5 segundos, el jugador es invulnerable y los agentes patrullan.
     this.chaseEnabledTime = this.time.now + 5000;
     this.isInvulnerable = true;
     this.time.delayedCall(5000, () => { this.isInvulnerable = false; });
-    
     this.initGroups();
     this.spawnInitialObjects();
     this.setupCollisions();
@@ -214,9 +207,7 @@ class GameScene extends Phaser.Scene {
     this.tweets = this.physics.add.group();
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
-    for (let i = 0; i < this.gameState.agentCount; i++) {
-      this.createAgent();
-    }
+    for (let i = 0; i < this.gameState.agentCount; i++) { this.createAgent(); }
   }
   createAgent() {
     const agent = this.physics.add.sprite(
@@ -261,7 +252,6 @@ class GameScene extends Phaser.Scene {
     if (this.cursors.right.isDown || touchInput.right) vx = speed;
     if (this.cursors.up.isDown || touchInput.up) vy = -speed;
     if (this.cursors.down.isDown || touchInput.down) vy = speed;
-    
     this.player.setVelocity(vx, vy);
     this.agents.getChildren().forEach(agent => agent.ia.update(this.player));
     if (!this.gameEnded && this.gameState.evidencias.documentos >= 15) { this.endGame(true); }
@@ -302,7 +292,7 @@ class GameScene extends Phaser.Scene {
       duration: 200,
       yoyo: true
     });
-    // Al recoger documentos, solo se genera un nuevo documento (no se generan trampas)
+    // Al recoger documento, solo se genera un nuevo documento (no trampas)
     this.spawnDocument();
     this.updateUI();
   }
@@ -329,22 +319,25 @@ class GameScene extends Phaser.Scene {
       this.createAgent();
       showTempMessage(this, "¡Refuerzos del FBI!", "#ff0000");
     }
-    // En lugar de 1, ahora se generan 2 trampas nuevas tras la colisión con una trampa.
+    // Al caer en trampa, se generan 2 trampas nuevas
     this.time.delayedCall(2000, () => {
       this.spawnTrap();
       this.spawnTrap();
     });
+    // Activar el flag para que los agentes pasen a chase
+    this.trapActivated = true;
+    // Desactivar el modo chase después de 3 segundos
+    this.time.delayedCall(3000, () => { this.trapActivated = false; });
     this.updateUI();
   }
   onAgentCollision(player, agent) {
     if (this.isInvulnerable || this.gameEnded) return;
     this.gameEnded = true;
+    // No se pausa la física para evitar bloqueos; se cambia de escena de inmediato
     this.sound.play('sirena');
     this.musica.stop();
     showTempMessage(this, "¡Fuiste atrapado por el FBI!", "#ff0000");
-    this.time.delayedCall(500, () => {
-      this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false, caught: true });
-    });
+    this.scene.start('EndScene', { score: this.gameState.evidencias.documentos, win: false, caught: true });
   }
   endGame(win) {
     if (this.gameEnded) return;
@@ -354,7 +347,9 @@ class GameScene extends Phaser.Scene {
   }
 }
 
-// --- Pantalla de Fin ---
+// ---------------------
+// EndScene – Pantalla de Fin
+// ---------------------
 class EndScene extends Phaser.Scene {
   constructor() { super('EndScene'); }
   init(data) {
@@ -363,9 +358,9 @@ class EndScene extends Phaser.Scene {
     this.caught = data.caught || false;
   }
   create() {
+    // Fondo de la pantalla final
     this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
-    
     let titleText, messageText;
     if (this.caught) {
       titleText = "¡Fuiste atrapado!";
@@ -377,14 +372,12 @@ class EndScene extends Phaser.Scene {
       titleText = "¡Derrota!";
       messageText = "Tu popularidad se agotó antes de esconder todas las evidencias.";
     }
-    
     this.add.text(400, 140, titleText, {
       fontSize: '30px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
-    
     this.add.text(400, 190, messageText, {
       fontSize: '20px',
       fill: '#34495e',
@@ -392,13 +385,11 @@ class EndScene extends Phaser.Scene {
       lineSpacing: 6,
       wordWrap: { width: 550 }
     }).setOrigin(0.5);
-    
     this.add.text(400, 240, `Evidencias escondidas: ${this.finalScore}`, {
       fontSize: '20px',
       fill: '#34495e',
       align: 'center'
     }).setOrigin(0.5);
-    
     const restartButton = this.add.text(400, 320, 'Jugar de nuevo', {
       fontSize: '24px',
       fill: '#ffffff',
@@ -406,7 +397,6 @@ class EndScene extends Phaser.Scene {
       padding: { x: 25, y: 10 },
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    
     restartButton.on('pointerover', () => restartButton.setBackgroundColor('#219a52'));
     restartButton.on('pointerout', () => restartButton.setBackgroundColor('#27ae60'));
     restartButton.on('pointerdown', () => {
