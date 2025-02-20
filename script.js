@@ -45,7 +45,7 @@ class GameState {
     this.apoyo = 100;
     this.trapHits = 0;
     this.caught = false;
-    // Iniciamos con 1 agente y se incrementará conforme aumenten las alertas
+    // Iniciamos con 1 agente (FBI) y se incrementará conforme aumenten las alertas.
     this.agentCount = 1;
   }
   
@@ -68,7 +68,7 @@ class AgentIA {
   }
   
   update(target) {
-    // Durante los primeros 5 segundos, los agentes solo patrullan
+    // Durante los primeros 5 segundos, los agentes solo patrullan.
     if (this.sprite.scene.time.now < this.sprite.scene.chaseEnabledTime) {
       if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
         const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
@@ -126,7 +126,7 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Se cargan los assets necesarios para todas las escenas
+    // Cargamos todos los assets necesarios para todas las escenas.
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
@@ -140,41 +140,46 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Desbloquea el audio en móviles tras el primer toque
+    // Desbloquea el audio en móviles tras el primer toque.
     this.input.once('pointerdown', () => {
       if (this.sound.context.state !== 'running') {
         this.sound.context.resume();
       }
     });
     
-    // Agregamos directamente los elementos en posiciones absolutas centradas en 800x600
-    // Fondo de la pantalla de inicio
+    // Fondo de la pantalla de inicio.
     this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
     
-    // Título
-    this.add.text(400, 150, 'Milei vs. El FBI\nLa estafa de Libra', {
-      fontSize: '36px',
+    // Título (más pequeño y separado de la intro).
+    this.add.text(400, 140, 'Milei vs. El FBI', {
+      fontSize: '32px',
       fill: '#2c3e50',
       align: 'center',
-      fontStyle: 'bold',
-      lineSpacing: 10
+      fontStyle: 'bold'
     }).setOrigin(0.5);
     
-    // Introducción
-    this.add.text(400, 270, 
-      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
+    // Subtítulo o "tagline".
+    this.add.text(400, 190, 'La estafa de Libra', {
+      fontSize: '24px',
+      fill: '#2c3e50',
+      align: 'center'
+    }).setOrigin(0.5);
+    
+    // Introducción (con espacio suficiente).
+    this.add.text(400, 260, 
+      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
       {
-        fontSize: '20px',
+        fontSize: '18px',
         fill: '#34495e',
         align: 'center',
-        lineSpacing: 10,
+        lineSpacing: 8,
         wordWrap: { width: 550 }
       }
     ).setOrigin(0.5);
     
-    // Botón para iniciar el juego
-    const startButton = this.add.text(400, 400, 'Iniciar Juego', {
+    // Botón para iniciar el juego.
+    const startButton = this.add.text(400, 360, 'Iniciar Juego', {
       fontSize: '28px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
@@ -196,17 +201,18 @@ class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
     this.isInvulnerable = false;
+    this.gameEnded = false;
   }
   
   create() {
     this.gameState = new GameState();
-    // Música de fondo con volumen reducido
+    // Música de fondo con volumen reducido.
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.3 });
     
     this.createUI();
     this.createPlayer();
     
-    // Se establece un retraso de 5 segundos para que los agentes no persigan y el jugador sea invulnerable
+    // Durante los primeros 5 segundos los agentes no persiguen y el jugador es invulnerable.
     this.chaseEnabledTime = this.time.now + 5000;
     this.isInvulnerable = true;
     this.time.delayedCall(5000, () => {
@@ -260,7 +266,7 @@ class GameScene extends Phaser.Scene {
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
     
-    // Crear agentes según gameState.agentCount (inicialmente 1)
+    // Crear agentes según gameState.agentCount (inicialmente 1).
     for (let i = 0; i < this.gameState.agentCount; i++) {
       this.createAgent();
     }
@@ -300,13 +306,16 @@ class GameScene extends Phaser.Scene {
       callback: () => {
         this.gameState.apoyo = Math.max(this.gameState.apoyo - 1, 0);
         this.updateUI();
+        if (!this.gameEnded && this.gameState.apoyo <= 0) {
+          this.endGame(false);
+        }
       },
       loop: true
     });
   }
   
   update() {
-    if (this.gameState.caught) return;
+    if (this.gameEnded) return;
     
     const speed = 200;
     let vx = 0, vy = 0;
@@ -319,8 +328,9 @@ class GameScene extends Phaser.Scene {
     this.player.setVelocity(vx, vy);
     this.agents.getChildren().forEach(agent => agent.ia.update(this.player));
     
-    if (this.gameState.evidencias.documentos >= 15) this.endGame(true);
-    if (this.gameState.apoyo <= 0) this.endGame(false);
+    if (!this.gameEnded && this.gameState.evidencias.documentos >= 15) {
+      this.endGame(true);
+    }
   }
   
   updateUI() {
@@ -405,9 +415,10 @@ class GameScene extends Phaser.Scene {
   }
   
   onAgentCollision(player, agent) {
-    if (this.isInvulnerable || this.gameState.caught) return;
+    if (this.isInvulnerable || this.gameEnded) return;
     
-    // Pausa la física para evitar bloqueos
+    // Pausar la física para evitar bloqueos y marcar el fin del juego.
+    this.gameEnded = true;
     this.physics.pause();
     this.gameState.caught = true;
     this.sound.play('sirena');
@@ -425,6 +436,8 @@ class GameScene extends Phaser.Scene {
   }
   
   endGame(win) {
+    if (this.gameEnded) return;
+    this.gameEnded = true;
     this.musica.stop();
     this.scene.start('EndScene', { 
       score: this.gameState.evidencias.documentos,
@@ -460,7 +473,7 @@ class EndScene extends Phaser.Scene {
       messageText = "Lograste esconder las evidencias y engañar\nal FBI y al pueblo.";
     } else {
       titleText = "¡Derrota!";
-      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos las evidencias.";
+      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos los documentos.";
     }
     
     const title = this.add.text(0, -80, titleText, {
