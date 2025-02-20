@@ -159,16 +159,10 @@ class StartScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5);
     
-    // Subtítulo o "tagline".
-    this.add.text(400, 190, 'La estafa de Libra', {
-      fontSize: '24px',
-      fill: '#2c3e50',
-      align: 'center'
-    }).setOrigin(0.5);
-    
+
     // Introducción (con espacio suficiente).
     this.add.text(400, 260, 
-      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
+      'Denuncian a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
       {
         fontSize: '18px',
         fill: '#34495e',
@@ -179,7 +173,7 @@ class StartScene extends Phaser.Scene {
     ).setOrigin(0.5);
     
     // Botón para iniciar el juego.
-    const startButton = this.add.text(400, 360, 'Iniciar Juego', {
+    const startButton = this.add.text(400, 380, 'Iniciar Juego', {
       fontSize: '28px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
