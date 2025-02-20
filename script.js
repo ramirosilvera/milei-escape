@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
       event.preventDefault();
       const btn = event.target.closest('.arrow-btn');
       if (!btn) return;
-      
       const action = btn.id;
       touchInput[action] = (event.type === 'touchstart');
     };
@@ -20,13 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
     controls.addEventListener('touchstart', handleTouchEvent, { passive: false });
     controls.addEventListener('touchend', handleTouchEvent);
     controls.addEventListener('touchcancel', handleTouchEvent);
-
     ['mousedown', 'mouseup', 'mouseleave'].forEach(eventType => {
       controls.addEventListener(eventType, (e) => {
         e.preventDefault();
         const btn = e.target.closest('.arrow-btn');
         if (!btn) return;
-        
         touchInput[btn.id] = (eventType === 'mousedown');
       });
     });
@@ -45,7 +42,7 @@ class GameState {
     this.apoyo = 100;
     this.trapHits = 0;
     this.caught = false;
-    // Iniciamos con 1 agente (FBI) y se incrementará conforme aumenten las alertas.
+    // Iniciamos con 1 agente y se incrementará con las alertas.
     this.agentCount = 1;
   }
   
@@ -54,7 +51,6 @@ class GameState {
   }
   
   aumentarDificultad() {
-    // Máximo 6 agentes
     this.agentCount = Math.min(6, this.agentCount + 1);
   }
 }
@@ -68,23 +64,17 @@ class AgentIA {
   }
   
   update(target) {
-    // Durante los primeros 5 segundos, los agentes solo patrullan.
+    // Durante los primeros 5 segundos, solo patrullan.
     if (this.sprite.scene.time.now < this.sprite.scene.chaseEnabledTime) {
       if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
         const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
-        this.sprite.setVelocity(
-          Math.cos(angle) * 50,
-          Math.sin(angle) * 50
-        );
+        this.sprite.setVelocity(Math.cos(angle) * 50, Math.sin(angle) * 50);
         this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
       }
       return;
     }
     
-    const distance = Phaser.Math.Distance.Between(
-      this.sprite.x, this.sprite.y, target.x, target.y
-    );
-    
+    const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, target.x, target.y);
     this.currentState = distance < 200 ? this.states.CHASE : this.states.PATROL;
     
     if (this.currentState === this.states.CHASE) {
@@ -93,10 +83,7 @@ class AgentIA {
     } else {
       if (!this.sprite.patrolTimer || this.sprite.patrolTimer < this.sprite.scene.time.now) {
         const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
-        this.sprite.setVelocity(
-          Math.cos(angle) * 50,
-          Math.sin(angle) * 50
-        );
+        this.sprite.setVelocity(Math.cos(angle) * 50, Math.sin(angle) * 50);
         this.sprite.patrolTimer = this.sprite.scene.time.now + 2000;
       }
     }
@@ -126,7 +113,6 @@ class StartScene extends Phaser.Scene {
   }
   
   preload() {
-    // Cargamos todos los assets necesarios para todas las escenas.
     this.load.image('milei', 'img/milei.png');
     this.load.image('documento', 'img/documento.png');
     this.load.image('fbi', 'img/fbi.png');
@@ -140,7 +126,6 @@ class StartScene extends Phaser.Scene {
   }
   
   create() {
-    // Desbloquea el audio en móviles tras el primer toque.
     this.input.once('pointerdown', () => {
       if (this.sound.context.state !== 'running') {
         this.sound.context.resume();
@@ -151,33 +136,37 @@ class StartScene extends Phaser.Scene {
     this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
     
-    // Título (más pequeño y separado de la intro).
-    this.add.text(400, 140, 'Milei vs. El FBI', {
-      fontSize: '32px',
+    // Título, subtítulo e introducción con mayor separación y fuente reducida.
+    this.add.text(400, 100, 'Milei vs. El FBI', {
+      fontSize: '28px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     
-
-    // Introducción (con espacio suficiente).
-    this.add.text(400, 260, 
-      'Denuncian a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y\nmantén el apoyo popular.',
+    this.add.text(400, 140, 'La estafa de Libra', {
+      fontSize: '22px',
+      fill: '#2c3e50',
+      align: 'center'
+    }).setOrigin(0.5);
+    
+    this.add.text(400, 200, 
+      '40 inversores denunciaron a Milei ante el FBI\npor estafa con la shitcoin de Libra.\n\n¡Ayúdalo a esconder 15 evidencias clave\nantes de que su popularidad caiga a 0!\n\nEvita a los agentes del FBI y mantén el apoyo popular.',
       {
-        fontSize: '18px',
+        fontSize: '16px',
         fill: '#34495e',
         align: 'center',
-        lineSpacing: 8,
+        lineSpacing: 6,
         wordWrap: { width: 550 }
       }
     ).setOrigin(0.5);
     
-    // Botón para iniciar el juego.
-    const startButton = this.add.text(400, 380, 'Iniciar Juego', {
-      fontSize: '28px',
+    // Botón de iniciar juego con mayor separación.
+    const startButton = this.add.text(400, 320, 'Iniciar Juego', {
+      fontSize: '24px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
-      padding: { x: 30, y: 15 },
+      padding: { x: 25, y: 10 },
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
@@ -200,13 +189,12 @@ class GameScene extends Phaser.Scene {
   
   create() {
     this.gameState = new GameState();
-    // Música de fondo con volumen reducido.
     this.musica = this.sound.add('musicaFondo').play({ loop: true, volume: 0.3 });
     
     this.createUI();
     this.createPlayer();
     
-    // Durante los primeros 5 segundos los agentes no persiguen y el jugador es invulnerable.
+    // Los primeros 5 segundos: no persiguen y el jugador es invulnerable.
     this.chaseEnabledTime = this.time.now + 5000;
     this.isInvulnerable = true;
     this.time.delayedCall(5000, () => {
@@ -221,12 +209,11 @@ class GameScene extends Phaser.Scene {
   
   createUI() {
     this.uiContainer = this.add.container(0, 0);
-    
     const style = {
-      fontSize: '24px',
+      fontSize: '20px',
       fontStyle: 'bold',
       backgroundColor: 'rgba(255,255,255,0.9)',
-      padding: { x: 15, y: 10 }
+      padding: { x: 10, y: 8 }
     };
     
     this.documentCounter = this.add.text(20, 20, 'EVIDENCIAS: 15/15', {
@@ -234,12 +221,12 @@ class GameScene extends Phaser.Scene {
       fill: '#2c3e50'
     }).setOrigin(0);
     
-    this.supportText = this.add.text(20, 60, 'POPULARIDAD: 100', {
+    this.supportText = this.add.text(20, 50, 'POPULARIDAD: 100', {
       ...style,
       fill: '#27ae60'
     }).setOrigin(0);
     
-    this.fbiText = this.add.text(20, 100, 'ALERTAS: 0', {
+    this.fbiText = this.add.text(20, 80, 'ALERTAS: 0', {
       ...style,
       fill: '#c0392b'
     }).setOrigin(0);
@@ -260,7 +247,6 @@ class GameScene extends Phaser.Scene {
     this.traps = this.physics.add.group();
     this.agents = this.physics.add.group();
     
-    // Crear agentes según gameState.agentCount (inicialmente 1).
     for (let i = 0; i < this.gameState.agentCount; i++) {
       this.createAgent();
     }
@@ -313,7 +299,6 @@ class GameScene extends Phaser.Scene {
     
     const speed = 200;
     let vx = 0, vy = 0;
-    
     if (this.cursors.left.isDown || touchInput.left) vx = -speed;
     if (this.cursors.right.isDown || touchInput.right) vx = speed;
     if (this.cursors.up.isDown || touchInput.up) vy = -speed;
@@ -329,7 +314,7 @@ class GameScene extends Phaser.Scene {
   
   updateUI() {
     this.documentCounter.setText(`DOCUMENTOS: ${this.gameState.documentosRestantes}/15`);
-    this.supportText.setText(`APOYO: ${Math.max(this.gameState.apoyo, 0)}`);
+    this.supportText.setText(`POPULARIDAD: ${Math.max(this.gameState.apoyo, 0)}`);
     this.fbiText.setText(`ALERTAS: ${this.gameState.alertasFBI}`);
   }
   
@@ -390,7 +375,6 @@ class GameScene extends Phaser.Scene {
   hitTrap(player, trap) {
     trap.disableBody(true, true);
     this.gameState.apoyo = Math.max(this.gameState.apoyo - 15, 0);
-    
     const sirena = this.sound.add('sirena');
     sirena.play();
     this.time.delayedCall(2000, () => sirena.stop());
@@ -410,17 +394,12 @@ class GameScene extends Phaser.Scene {
   
   onAgentCollision(player, agent) {
     if (this.isInvulnerable || this.gameEnded) return;
-    
-    // Pausar la física para evitar bloqueos y marcar el fin del juego.
+    // Evitar bloqueos: marcar el fin y luego cambiar de escena con un breve retraso.
     this.gameEnded = true;
-    this.physics.pause();
-    this.gameState.caught = true;
     this.sound.play('sirena');
     this.musica.stop();
-    
     showTempMessage(this, "¡Fuiste atrapado por el FBI!", "#ff0000");
-    
-    this.time.delayedCall(1500, () => {
+    this.time.delayedCall(500, () => {
       this.scene.start('EndScene', { 
         score: this.gameState.evidencias.documentos,
         win: false,
@@ -452,49 +431,50 @@ class EndScene extends Phaser.Scene {
   }
   
   create() {
-    const endContainer = this.add.container(400, 300);
-    
-    const background = this.add.rectangle(0, 0, 600, 400, 0xffffff, 0.95)
-      .setOrigin(0.5)
+    // Fondo de la pantalla de fin.
+    this.add.rectangle(400, 300, 600, 400, 0xffffff, 0.95)
       .setStrokeStyle(2, 0x000000);
     
+    // Título y mensaje, con mayor separación y fuentes reducidas.
     let titleText, messageText;
     if (this.caught) {
       titleText = "¡Fuiste atrapado!";
-      messageText = "El FBI te capturó con las manos en la masa.\nTu popularidad cayó a 0.";
+      messageText = "El FBI te capturó y tu popularidad cayó a 0.";
     } else if (this.win) {
       titleText = "¡Victoria!";
-      messageText = "Lograste esconder las evidencias y engañar\nal FBI y al pueblo.";
+      messageText = "Escondiste todas las evidencias y engañaste al FBI.";
     } else {
       titleText = "¡Derrota!";
-      messageText = "Tu popularidad cayó a 0 antes de que\npudieras esconder todos los documentos.";
+      messageText = "Tu popularidad cayó a 0 antes de esconder todas las evidencias.";
     }
     
-    const title = this.add.text(0, -80, titleText, {
-      fontSize: '36px',
+    this.add.text(400, 150, titleText, {
+      fontSize: '30px',
       fill: '#2c3e50',
       align: 'center',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     
-    const message = this.add.text(0, 0, messageText, {
-      fontSize: '24px',
+    this.add.text(400, 200, messageText, {
+      fontSize: '20px',
       fill: '#34495e',
       align: 'center',
-      lineSpacing: 15
+      lineSpacing: 6,
+      wordWrap: { width: 550 }
     }).setOrigin(0.5);
     
-    const scoreText = this.add.text(0, 80, `Evidencias escondidas: ${this.finalScore}`, {
-      fontSize: '24px',
+    this.add.text(400, 250, `Evidencias escondidas: ${this.finalScore}`, {
+      fontSize: '20px',
       fill: '#34495e',
       align: 'center'
     }).setOrigin(0.5);
     
-    const restartButton = this.add.text(0, 140, 'Jugar de nuevo', {
-      fontSize: '28px',
+    // Botón de reiniciar.
+    const restartButton = this.add.text(400, 320, 'Jugar de nuevo', {
+      fontSize: '24px',
       fill: '#ffffff',
       backgroundColor: '#27ae60',
-      padding: { x: 30, y: 15 },
+      padding: { x: 25, y: 10 },
       borderRadius: 15
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
@@ -504,8 +484,6 @@ class EndScene extends Phaser.Scene {
       this.sound.play('click');
       this.scene.start('StartScene');
     });
-
-    endContainer.add([background, title, message, scoreText, restartButton]);
   }
 }
 
@@ -529,11 +507,8 @@ const config = {
   scene: [StartScene, GameScene, EndScene],
   input: {
     activePointers: 3,
-    touch: { 
-      capture: false 
-    }
+    touch: { capture: false }
   },
-  // Habilitar el contenedor DOM para notificaciones (tweets)
   dom: {
     createContainer: true
   }
