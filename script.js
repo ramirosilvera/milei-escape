@@ -25,7 +25,7 @@ const config = {
 
 let player, cursors, documents, fbiAgents, traps, tweets;
 let score = 0, popularity = 100, gameActive = true;
-let fbiSpeed = 100, currentFbiCount = 1, fbiSpawnTimer;
+let fbiSpeed = 80, currentFbiCount = 1, fbiSpawnTimer;
 let upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,7 +46,7 @@ function initializeGame() {
     popularity = 100;
     gameActive = true;
     currentFbiCount = 1;
-    fbiSpeed = 100;
+    fbiSpeed = 80;
     upPressed = downPressed = leftPressed = rightPressed = false;
     
     document.getElementById('score').textContent = 0;
@@ -117,7 +117,7 @@ function create() {
 function update() {
     if(!gameActive) return;
     
-    const speed = 250;
+    const speed = 150;
     player.setVelocity(0);
     
     if(cursors.left.isDown || leftPressed) player.setVelocityX(-speed);
@@ -186,7 +186,7 @@ function collectTweet(player, tweet) {
 
 function triggerTrap() {
     fbiSpeed += 60;
-    popularity = Phaser.Math.Clamp(popularity - 35, 0, 100);
+    popularity = Phaser.Math.Clamp(popularity - 5, 0, 100);
     showNotification('¡TRAMPA ACTIVADA! FBI +VELOC', '#ff0000');
     updateHUD();
     this.cameras.main.shake(500, 0.03);
