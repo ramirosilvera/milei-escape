@@ -9,21 +9,22 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-        <div id="start-screen">
+    <div id="start-screen">
         <h1>MILEI vs FBI</h1>
         <div id="story">
-            <p>Tras estafar a inversores con su criptomoneda "Libra", Milei enfrenta una investigación del FBI. ¡Debes ayudarlo a destruir las evidencias mientras mantiene su fachada pública!</p>
-            <p>Recolecta 15 documentos comprometedores, manipula la opinión con tweets y evade a los agentes que se acercan.</p>
-            <p>¡Cuidado! Cada trampa activada acelera tu caída...</p>
+            <p>Tras estafar a inversores con "Libra", el FBI investiga a Milei. ¡Destruye las evidencias y mantén tu fachada pública!</p>
+            <p>Recolecta 15 documentos, manipula la opinión con tweets y ¡evade a los agentes!</p>
         </div>
         <button id="start-btn">Iniciar Juego</button>
     </div>
-    <div id="game-container">
+    
+    <div id="game-container" style="display:none;">
         <div id="hud">
             <div>Documentos: <span id="score">0</span>/15</div>
             <div>Apoyo: <span id="popularity">100</span>%</div>
         </div>
         <div id="game-notification"></div>
+        <button id="restart-btn" class="game-button">Reiniciar Juego</button>
         <div id="controls">
             <button id="up" class="control-btn">↑</button>
             <button id="left" class="control-btn">←</button>
