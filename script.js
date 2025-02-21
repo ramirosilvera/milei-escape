@@ -205,7 +205,7 @@ function endGameWin() {
 function endGameLose() {
     gameActive = false;
     showEndScreen(
-        '¡CAÍDA DEL MESÍAS!',
+        '¡MILEI ESTAFADOR!',
         `Extraditado a EE.UU. tras juicio relámpago.\n\nCondena: 30 años en Guantánamo por estafa interestatal.\n\nSus seguidores ahora minan Bitcoin para pagar su fianza fallida.`
     );
     this.sound.play('sirena');
