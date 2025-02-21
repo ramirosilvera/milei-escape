@@ -75,16 +75,15 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 28px;
+    font-size: 15px; /* Reducir el tamaño de la fuente */
     text-align: center;
     display: none;
     z-index: 100;
     text-shadow: 3px 3px 3px black;
-    padding: 25px;
-    background: rgba(0,0,0,0.9);
+    padding: 15px; /* Reducir el padding */
+    background: rgba(0, 0, 0, 0.5); /* Hacer el fondo más translúcido */
     border-radius: 15px;
     border: 2px solid #ff0000;
-}
 
 #controls {
     display: grid;
@@ -101,7 +100,7 @@ body {
     width: 70px; /* Reducir el ancho */
     height: 70px; /* Reducir la altura */
     font-size: 30px; /* Reducir el tamaño de la fuente */
-    background: rgba(255, 255, 255, 0.4); /* Hacer el fondo más translúcido */
+    background: rgba(255, 255, 255, 0.3); /* Hacer el fondo más translúcido */
     backdrop-filter: blur(10px);
     border: 3px solid #fff;
     transition: all 0.2s;
