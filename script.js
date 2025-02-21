@@ -25,7 +25,8 @@ const config = {
 
 let player, cursors, documents, fbiAgents, traps, tweets;
 let score = 0, popularity = 100, gameActive = true;
-let fbiSpeed = 100, currentFbiCount = 1, fbiSpawnTimer;
+let fbiSpeed = 80, currentFbiCount = 1; // Velocidad reducida
+let patrolRoutes = []; // Nuevo sistema de patrullaje
 let upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,7 +47,8 @@ function initializeGame() {
     popularity = 100;
     gameActive = true;
     currentFbiCount = 1;
-    fbiSpeed = 100;
+    fbiSpeed = 80;
+    patrolRoutes = [];
     upPressed = downPressed = leftPressed = rightPressed = false;
     
     document.getElementById('score').textContent = 0;
@@ -82,8 +84,8 @@ function create() {
 
     createCollectibles.call(this, documents, 'documento', 10);
     createCollectibles.call(this, tweets, 'tweet', 5);
-    createCollectibles.call(this, traps, 'trampa', 5);
-    createPatrollingFBI.call(this);
+    createCollectibles.call(this, traps, 'trampa', 8); // Más trampas
+    createPatrollingFBI.call(this); // FBI inicial
 
     this.physics.add.overlap(player, documents, collectDocument, null, this);
     this.physics.add.overlap(player, tweets, collectTweet, null, this);
@@ -93,19 +95,9 @@ function create() {
     this.time.addEvent({
         delay: 1000,
         callback: () => {
-            popularity = Phaser.Math.Clamp(popularity - 3, 0, 100);
+            popularity = Phaser.Math.Clamp(popularity - 2, 0, 100);
             updateHUD();
             if(popularity <= 0) endGameLose.call(this);
-        },
-        loop: true
-    });
-
-    fbiSpawnTimer = this.time.addEvent({
-        delay: 25000,
-        callback: () => {
-            currentFbiCount++;
-            createPatrollingFBI.call(this);
-            showNotification(`¡REFUERZOS FBI! (${currentFbiCount})`, '#ff0000');
         },
         loop: true
     });
@@ -125,8 +117,30 @@ function update() {
     if(cursors.up.isDown || upPressed) player.setVelocityY(-speed);
     if(cursors.down.isDown || downPressed) player.setVelocityY(speed);
     
-    fbiAgents.getChildren().forEach(agent => {
-        this.physics.moveToObject(agent, player, fbiSpeed);
+    // Actualizar patrullas del FBI
+    patrolRoutes.forEach((route, index) => {
+        if(!route.agent.active) {
+            patrolRoutes.splice(index, 1);
+            return;
+        }
+        
+        const distance = Phaser.Math.Distance.Between(
+            route.agent.x,
+            route.agent.y,
+            route.points[route.currentPoint].x,
+            route.points[route.currentPoint].y
+        );
+        
+        if(distance < 20) {
+            route.currentPoint = (route.currentPoint + 1) % route.points.length;
+        }
+        
+        this.physics.moveTo(
+            route.agent,
+            route.points[route.currentPoint].x,
+            route.points[route.currentPoint].y,
+            fbiSpeed
+        );
     });
 }
 
@@ -154,6 +168,19 @@ function createPatrollingFBI() {
         .setCollideWorldBounds(true)
         .setDepth(1);
         
+        // Configurar ruta de patrulla
+        const patrolPoints = [
+            { x: Phaser.Math.Between(100, 700), y: Phaser.Math.Between(100, 500) },
+            { x: Phaser.Math.Between(100, 700), y: Phaser.Math.Between(100, 500) },
+            { x: Phaser.Math.Between(100, 700), y: Phaser.Math.Between(100, 500) }
+        ];
+        
+        patrolRoutes.push({
+            agent: agent,
+            points: patrolPoints,
+            currentPoint: 0
+        });
+
         fbiAgents.add(agent);
     }
 }
@@ -185,14 +212,21 @@ function collectTweet(player, tweet) {
 }
 
 function triggerTrap() {
-    fbiSpeed += 60;
-    popularity = Phaser.Math.Clamp(popularity - 35, 0, 100);
-    showNotification('¡TRAMPA ACTIVADA! FBI +VELOC', '#ff0000');
+    // Añadir nuevo agente en lugar de aumentar velocidad
+    currentFbiCount++;
+    createPatrollingFBI.call(this);
+    popularity = Phaser.Math.Clamp(popularity - 15, 0, 100);
+    
+    showNotification('¡TRAMPA! +1 FBI', '#ff0000');
     updateHUD();
-    this.cameras.main.shake(500, 0.03);
+    this.cameras.main.shake(300, 0.02);
     player.setTint(0xff0000);
     this.time.delayedCall(500, () => player.clearTint());
 }
+
+// Resto de funciones sin cambios (endGameWin, endGameLose, showEndScreen, updateHUD, showNotification, setupTouchControls) 
+// ... mantener igual que en el código anterior ...
+
 
 function endGameWin() {
     gameActive = false;
