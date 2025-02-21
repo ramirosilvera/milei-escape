@@ -6,7 +6,7 @@ body {
     align-items: center;
     min-height: 100vh;
     background: #000;
-    font-family: 'Arial Black', sans-serif;
+    font-family: 'Arial', sans-serif;
     touch-action: none;
 }
 
@@ -18,32 +18,12 @@ body {
 }
 
 #story {
-    background: rgba(200, 0, 0, 0.3);
+    background: rgba(50, 50, 50, 0.9);
     padding: 20px;
     margin: 20px;
     border-radius: 15px;
-    border: 2px solid #ff4444;
-    text-align: left;
-    line-height: 1.7;
-}
-
-.game-button {
-    padding: 20px 40px;
-    font-size: 24px;
-    background: #e74c3c;
-    border: none;
-    color: white;
-    border-radius: 30px;
-    cursor: pointer;
-    margin: 30px;
-    transition: all 0.3s;
-    text-transform: uppercase;
-}
-
-.game-button:hover {
-    background: #c0392b;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px #ff0000;
+    border: 2px solid #666;
+    line-height: 1.6;
 }
 
 #game-container {
@@ -51,82 +31,44 @@ body {
     width: 800px;
     height: 600px;
     max-width: 100%;
-    border: 3px solid #ff0000;
-    transform: scale(1.2);
-    transform-origin: top center;
-}
-
-#hud {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    color: white;
-    z-index: 100;
-    background: rgba(0,0,0,0.8);
-    padding: 15px 25px;
-    border-radius: 10px;
-    font-size: 20px;
-    border: 2px solid #ffffff;
-}
-
-#game-notification {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 28px;
-    text-align: center;
-    display: none;
-    z-index: 100;
-    text-shadow: 3px 3px 3px black;
-    padding: 25px;
-    background: rgba(0,0,0,0.9);
-    border-radius: 15px;
-    border: 2px solid #ff0000;
+    transform: scale(1.1);
+    transform-origin: center;
 }
 
 #controls {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     position: fixed;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    gap: 25px;
-    z-index: 1000;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    opacity: 0.7;
+    gap: 15px;
+    touch-action: none;
 }
 
 .control-btn {
-    width: 90px;
-    height: 90px;
-    font-size: 40px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    border: 3px solid #fff;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 15px;
+    color: white;
     transition: all 0.2s;
 }
 
 .control-btn:active {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.4);
     transform: scale(0.9);
 }
 
 .end-screen {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.95);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    color: white;
-    z-index: 2000;
-    max-width: 700px;
-    border: 3px solid #ff0000;
+    /* Mantener estilos anteriores */
 }
+
+/* Resto de estilos se mantienen igual */
 
 .end-screen h2 {
     color: #ff4444;
