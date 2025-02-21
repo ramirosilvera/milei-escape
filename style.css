@@ -98,10 +98,10 @@ body {
 }
 
 .control-btn {
-    width: 90px;
-    height: 90px;
-    font-size: 40px;
-    background: rgba(255, 255, 255, 0.6);
+    width: 70px; /* Reducir el ancho */
+    height: 70px; /* Reducir la altura */
+    font-size: 30px; /* Reducir el tamaño de la fuente */
+    background: rgba(255, 255, 255, 0.4); /* Hacer el fondo más translúcido */
     backdrop-filter: blur(10px);
     border: 3px solid #fff;
     transition: all 0.2s;
