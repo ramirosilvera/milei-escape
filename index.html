@@ -2,23 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <title>Juego Arcade - Milei vs FBI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Milei vs. El FBI: La estafa de Libra</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 </head>
 <body>
-  <div id="game-container">
-    <!-- Controles táctiles -->
-    <div id="controls">
-      <button id="up" class="arrow-btn">↑</button>
-      <div id="middle-controls">
-        <button id="left" class="arrow-btn">←</button>
-        <button id="down" class="arrow-btn">↓</button>
-        <button id="right" class="arrow-btn">→</button>
-      </div>
-    </div>
+  <!-- Contenedor del juego -->
+  <div id="game-container"></div>
+
+  <!-- Controles táctiles para dispositivos móviles -->
+  <div id="touch-controls">
+    <button id="btn-up">↑</button>
+    <button id="btn-left">←</button>
+    <button id="btn-down">↓</button>
+    <button id="btn-right">→</button>
   </div>
+
+  <!-- Phaser.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+  <!-- Archivo de la lógica del juego -->
   <script src="script.js"></script>
 </body>
 </html>
+
