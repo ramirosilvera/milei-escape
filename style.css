@@ -10,66 +10,39 @@ body {
     touch-action: none;
 }
 
-#game-container {
-    position: relative;
-    width: 800px;
-    height: 600px;
-    max-width: 100%;
-    border: 2px solid #444;
-}
-
-#hud {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: white;
-    z-index: 100;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
-    border-radius: 5px;
-}
-
-#game-notification {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 24px;
+#start-screen {
     text-align: center;
-    display: none;
-    z-index: 100;
-    text-shadow: 2px 2px 2px black;
+    color: white;
+    padding: 20px;
+    max-width: 800px;
 }
 
-#controls {
+#story {
+    background: rgba(0,0,0,0.7);
+    padding: 20px;
+    margin: 20px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.game-button {
+    padding: 15px 30px;
+    font-size: 20px;
+    background: #ff4444;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
     display: none;
     position: absolute;
     bottom: 20px;
-    right: 20px;
-    gap: 10px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-.control-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    font-size: 24px;
-    background: rgba(255,255,255,0.3);
-    border: 2px solid white;
-    color: white;
-    touch-action: none;
-}
+/* ... (mantener todos los estilos previos) ... */
 
-@media (max-width: 768px) {
-    #controls {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-    }
+#restart-btn {
+    z-index: 1000;
 }
