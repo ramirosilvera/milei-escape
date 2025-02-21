@@ -75,13 +75,13 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 15px; /* Reducir el tamaño de la fuente */
+    font-size: 28px;
     text-align: center;
     display: none;
     z-index: 100;
     text-shadow: 3px 3px 3px black;
-    padding: 15px; /* Reducir el padding */
-    background: rgba(0, 0, 0, 0.5); /* Hacer el fondo más translúcido */
+    padding: 25px;
+    background: rgba(0,0,0,0.9);
     border-radius: 15px;
     border: 2px solid #ff0000;
 
