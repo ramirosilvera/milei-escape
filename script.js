@@ -188,7 +188,7 @@ function collectTweet(player, tweet) {
 
 function triggerTrap() {
     fbiSpeed += 5;
-    popularity = Phaser.Math.Clamp(popularity - 5, 0, 100);
+    popularity = Phaser.Math.Clamp(popularity - 1, 0, 100);
     showNotification('¡TRAMPA ACTIVADA! FBI +VELOC', '#ff0000');
     updateHUD();
     this.cameras.main.shake(500, 0.03);
