@@ -1,3 +1,4 @@
+// script.js
 let game;
 const config = {
     type: Phaser.AUTO,
@@ -27,11 +28,14 @@ const config = {
 let player, cursors, documents, fbiAgents, traps, tweets;
 let score = 0, popularity = 100, gameActive = true;
 let fbiSpeed = 100, currentFbiCount = 1, fbiSpawnTimer;
+let upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
 // Inicialización del juego
 function initializeGame() {
-    if(game) game.destroy(true);
-    game = new Phaser.Game(config);
+    if(game) {
+        game.destroy(true);
+        game = null;
+    }
     
     // Resetear variables
     score = 0;
@@ -39,20 +43,26 @@ function initializeGame() {
     gameActive = true;
     currentFbiCount = 1;
     fbiSpeed = 100;
+    upPressed = downPressed = leftPressed = rightPressed = false;
+    
     document.getElementById('score').textContent = 0;
     document.getElementById('popularity').textContent = 100;
     document.getElementById('restart-btn').style.display = 'none';
     document.getElementById('game-notification').style.display = 'none';
+    
+    game = new Phaser.Game(config);
 }
 
 // Event listeners
-document.getElementById('start-btn').addEventListener('click', () => {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('game-container').style.display = 'block';
-    initializeGame();
-});
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        initializeGame();
+    });
 
-document.getElementById('restart-btn').addEventListener('click', initializeGame);
+    document.getElementById('restart-btn').addEventListener('click', initializeGame);
+});
 
 function preload() {
     this.load.image('milei', 'img/milei.png');
@@ -66,23 +76,25 @@ function preload() {
 }
 
 function create() {
-    // Configuración inicial
     this.sound.play('sirena');
-    player = this.physics.add.sprite(400, 300, 'milei').setScale(0.15).setCollideWorldBounds(true);
     
-    // Grupos de objetos
+    // Jugador
+    player = this.physics.add.sprite(400, 300, 'milei')
+        .setScale(0.15)
+        .setCollideWorldBounds(true);
+    
+    // Objetos del juego
     documents = this.physics.add.group();
     tweets = this.physics.add.group();
     traps = this.physics.add.group();
     fbiAgents = this.physics.add.group();
 
-    // Crear elementos del juego
     createCollectibles.call(this, documents, 'documento', 15);
     createCollectibles.call(this, tweets, 'tweet', 10);
     createCollectibles.call(this, traps, 'trampa', 8);
     createPatrollingFBI.call(this);
 
-    // Sistema de colisiones
+    // Colisiones
     this.physics.add.overlap(player, documents, collectDocument, null, this);
     this.physics.add.overlap(player, tweets, collectTweet, null, this);
     this.physics.add.overlap(player, traps, triggerTrap, null, this);
@@ -94,7 +106,7 @@ function create() {
         callback: () => {
             popularity = Phaser.Math.Clamp(popularity - 2, 0, 100);
             updateHUD();
-            if(popularity <= 0) endGameLose();
+            if(popularity <= 0) endGameLose.call(this);
         },
         loop: true
     });
@@ -117,7 +129,6 @@ function create() {
 function update() {
     if(!gameActive) return;
     
-    // Movimiento del jugador
     const speed = 200;
     player.setVelocity(0);
     
@@ -126,12 +137,15 @@ function update() {
     if(cursors.up.isDown || upPressed) player.setVelocityY(-speed);
     if(cursors.down.isDown || downPressed) player.setVelocityY(speed);
     
-    // Comportamiento del FBI
+    // Comportamiento FBI
     fbiAgents.getChildren().forEach(agent => {
-        if(Phaser.Math.Between(0, 1) {
+        if(Phaser.Math.Between(0, 1)) {
             this.physics.moveToObject(agent, player, fbiSpeed);
         } else {
-            agent.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
+            agent.setVelocity(
+                Phaser.Math.Between(-100, 100),
+                Phaser.Math.Between(-100, 100)
+            );
         }
     });
 }
@@ -139,12 +153,11 @@ function update() {
 // Funciones auxiliares
 function createCollectibles(group, texture, count) {
     for(let i = 0; i < count; i++) {
-        const x = Phaser.Math.Between(50, 750);
-        const y = Phaser.Math.Between(50, 550);
-        group.create(x, y, texture)
-            .setScale(0.1)
-            .setData('active', true)
-            .setDepth(1);
+        group.create(
+            Phaser.Math.Between(50, 750),
+            Phaser.Math.Between(50, 550),
+            texture
+        ).setScale(0.1).setData('active', true);
     }
 }
 
@@ -178,7 +191,7 @@ function collectDocument(player, doc) {
     score++;
     updateHUD();
     
-    if(score >= 15) endGameWin();
+    if(score >= 15) endGameWin.call(this);
 }
 
 function collectTweet(player, tweet) {
@@ -204,14 +217,14 @@ function triggerTrap() {
 
 function endGameWin() {
     gameActive = false;
-    showNotification('¡Evidencia destruida!', '#00ff00', true);
+    showNotification('¡Victoria! Evidencia destruida', '#00ff00', true);
     document.getElementById('restart-btn').style.display = 'block';
     player.disableBody(true, true);
 }
 
 function endGameLose() {
     gameActive = false;
-    showNotification('¡Capturado por el FBI!', '#ff0000', true);
+    showNotification('¡Derrota! Capturado por el FBI', '#ff0000', true);
     document.getElementById('restart-btn').style.display = 'block';
     this.sound.play('sirena');
     player.disableBody(true, true);
@@ -233,9 +246,6 @@ function showNotification(text, color, persistent = false) {
         setTimeout(() => notification.style.display = 'none', 2000);
     }
 }
-
-// Controles táctiles
-let upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
 function setupTouchControls() {
     const controls = ['up', 'down', 'left', 'right'];
