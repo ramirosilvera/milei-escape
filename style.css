@@ -1,105 +1,41 @@
-/* Reset y estilos globales */
-* {
+/* Reset básico y estilos generales */
+body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  background-color: #222;
+  color: #fff;
   font-family: Arial, sans-serif;
-  background: url('img/fondo.jpeg') no-repeat center center fixed;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#game-container {
-  position: relative;
-  width: 90vw;
-  max-width: 800px;
-  height: calc(90vw * 0.75);
-  max-height: 600px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   overflow: hidden;
 }
 
-/* Controles táctiles */
-#controls {
+/* Contenedor donde se inyecta el canvas de Phaser */
+#game-container {
+  width: 100%;
+  height: 100vh;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Estilos para los controles táctiles */
+#touch-controls {
   position: fixed;
-  bottom: 30px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  z-index: 1000;
-  touch-action: manipulation;
+  gap: 10px;
 }
 
-#middle-controls {
-  display: flex;
-  gap: 20px;
-}
-
-.arrow-btn {
-  width: 15vw;
-  height: 15vw;
-  max-width: 70px;
-  max-height: 70px;
+#touch-controls button {
+  background-color: #444;
   border: none;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #2193b0, #6dd5ed);
-  color: white;
-  font-size: 6vw;
+  color: #fff;
+  padding: 10px 15px;
+  font-size: 20px;
+  border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: all 0.1s ease;
-  touch-action: manipulation;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.arrow-btn:active {
-  transform: scale(0.85);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-@media (min-width: 600px) {
-  .arrow-btn { font-size: 28px; }
-}
-
-/* Notificaciones */
-.notification-top {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.9);
-  color: white;
-  padding: 15px 30px;
-  border-radius: 30px;
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  z-index: 2000;
-  white-space: nowrap;
-  pointer-events: none;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from { transform: translate(-50%, -20px); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
+#touch-controls button:active {
+  background-color: #666;
 }
