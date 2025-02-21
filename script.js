@@ -81,8 +81,8 @@ function create() {
     fbiAgents = this.physics.add.group();
 
     createCollectibles.call(this, documents, 'documento', 10);
-    createCollectibles.call(this, tweets, 'tweet', 5);
-    createCollectibles.call(this, traps, 'trampa', 5);
+    createCollectibles.call(this, tweets, 'tweet', 6);
+    createCollectibles.call(this, traps, 'trampa', 2);
     createPatrollingFBI.call(this);
 
     this.physics.add.overlap(player, documents, collectDocument, null, this);
@@ -165,7 +165,7 @@ function collectDocument(player, doc) {
     score++;
     updateHUD();
     
-    if(score >= 15) endGameWin.call(this);
+    if(score >= 10) endGameWin.call(this);
 }
 
 function collectTweet(player, tweet) {
