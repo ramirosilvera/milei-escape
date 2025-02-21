@@ -5,42 +5,45 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #1a1a1a;
-    font-family: Arial, sans-serif;
+    background: #000;
+    font-family: 'Arial Black', sans-serif;
     touch-action: none;
 }
 
 #start-screen {
     text-align: center;
-    color: white;
+    color: #fff;
     padding: 20px;
     max-width: 800px;
 }
 
 #story {
-    background: rgba(0,0,0,0.7);
+    background: rgba(200, 0, 0, 0.3);
     padding: 20px;
     margin: 20px;
-    border-radius: 10px;
+    border-radius: 15px;
+    border: 2px solid #ff4444;
     text-align: left;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 .game-button {
-    padding: 15px 30px;
-    font-size: 20px;
+    padding: 20px 40px;
+    font-size: 24px;
     background: #e74c3c;
     border: none;
     color: white;
-    border-radius: 25px;
+    border-radius: 30px;
     cursor: pointer;
-    margin: 20px;
-    transition: transform 0.2s;
+    margin: 30px;
+    transition: all 0.3s;
+    text-transform: uppercase;
 }
 
 .game-button:hover {
-    transform: scale(1.05);
     background: #c0392b;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #ff0000;
 }
 
 #game-container {
@@ -48,19 +51,22 @@ body {
     width: 800px;
     height: 600px;
     max-width: 100%;
-    border: 2px solid #444;
+    border: 3px solid #ff0000;
+    transform: scale(1.2);
+    transform-origin: top center;
 }
 
 #hud {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 20px;
+    left: 20px;
     color: white;
     z-index: 100;
-    background: rgba(0,0,0,0.7);
-    padding: 15px;
+    background: rgba(0,0,0,0.8);
+    padding: 15px 25px;
     border-radius: 10px;
-    font-size: 18px;
+    font-size: 20px;
+    border: 2px solid #ffffff;
 }
 
 #game-notification {
@@ -69,69 +75,91 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 24px;
+    font-size: 28px;
     text-align: center;
     display: none;
     z-index: 100;
-    text-shadow: 2px 2px 2px black;
-    padding: 20px;
-    background: rgba(0,0,0,0.8);
-    border-radius: 10px;
-}
-
-#restart-btn {
-    display: none;
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
+    text-shadow: 3px 3px 3px black;
+    padding: 25px;
+    background: rgba(0,0,0,0.9);
+    border-radius: 15px;
+    border: 2px solid #ff0000;
 }
 
 #controls {
-    display: none;
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 25px;
+    z-index: 1000;
 }
 
 .control-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    font-size: 24px;
-    background: rgba(255,255,255,0.3);
-    border: 2px solid white;
-    color: white;
-    touch-action: none;
-    transition: background 0.2s;
+    width: 90px;
+    height: 90px;
+    font-size: 40px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 3px solid #fff;
+    transition: all 0.2s;
 }
 
 .control-btn:active {
-    background: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.9);
+    transform: scale(0.9);
+}
+
+.end-screen {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.95);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    z-index: 2000;
+    max-width: 700px;
+    border: 3px solid #ff0000;
+}
+
+.end-screen h2 {
+    color: #ff4444;
+    font-size: 3em;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px #ff0000;
+}
+
+.end-screen p {
+    font-size: 1.3em;
+    line-height: 1.7;
+    margin: 20px 0;
 }
 
 @media (max-width: 768px) {
-    #controls {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+    #game-container {
+        transform: scale(1);
     }
     
     .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 70px;
+        height: 70px;
+        font-size: 30px;
     }
     
     #hud {
         font-size: 16px;
-        padding: 10px;
+        padding: 10px 15px;
     }
 }
 
 .low-popularity {
-    animation: blink 1s infinite;
+    animation: blink 0.8s infinite;
     color: #ff0000 !important;
 }
 
