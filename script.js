@@ -144,18 +144,20 @@ function createCollectibles(group, texture, count) {
 }
 
 function createPatrollingFBI() {
-    for(let i = 0; i < currentFbiCount; i++) {
-        const agent = this.physics.add.sprite(
-            Phaser.Math.Between(100, 700),
-            Phaser.Math.Between(100, 500),
-            'fbi'
-        )
-        .setScale(0.2)
-        .setCollideWorldBounds(true)
-        .setDepth(1);
-        
-        fbiAgents.add(agent);
-    }
+    setTimeout(() => {
+        for (let i = 0; i < currentFbiCount; i++) {
+            const agent = this.physics.add.sprite(
+                Phaser.Math.Between(100, 700),
+                Phaser.Math.Between(100, 500),
+                'fbi'
+            )
+            .setScale(0.2)
+            .setCollideWorldBounds(true)
+            .setDepth(1);
+            
+            fbiAgents.add(agent);
+        }
+    }, 4000); // 4000 milisegundos = 4 segundos
 }
 
 function collectDocument(player, doc) {
