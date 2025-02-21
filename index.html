@@ -1,27 +1,27 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Juego Arcade - Milei vs FBI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milei vs FBI</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Contenedor del juego -->
-  <div id="game-container"></div>
-
-  <!-- Controles táctiles para dispositivos móviles -->
-  <div id="touch-controls">
-    <button id="btn-up">↑</button>
-    <button id="btn-left">←</button>
-    <button id="btn-down">↓</button>
-    <button id="btn-right">→</button>
-  </div>
-
-  <!-- Phaser.js desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-  <!-- Archivo de la lógica del juego -->
-  <script src="script.js"></script>
+    <div id="game-container">
+        <div id="hud">
+            <div>Documentos: <span id="score">0</span>/15</div>
+            <div>Apoyo: <span id="popularity">100</span>%</div>
+        </div>
+        <div id="game-notification"></div>
+        <div id="controls">
+            <button id="up" class="control-btn">↑</button>
+            <button id="left" class="control-btn">←</button>
+            <button id="right" class="control-btn">→</button>
+            <button id="down" class="control-btn">↓</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
-
