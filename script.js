@@ -1,11 +1,10 @@
-// script.js
 let game;
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
     width: 800,
     height: 600,
-    backgroundColor: '#333333',
+    backgroundColor: '#222222',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -24,20 +23,25 @@ const config = {
     }
 };
 
-// Variables globales
 let player, cursors, documents, fbiAgents, traps, tweets;
 let score = 0, popularity = 100, gameActive = true;
 let fbiSpeed = 100, currentFbiCount = 1, fbiSpawnTimer;
 let upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
 
-// Inicialización del juego
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        initializeGame();
+    });
+});
+
 function initializeGame() {
     if(game) {
         game.destroy(true);
         game = null;
     }
     
-    // Resetear variables
     score = 0;
     popularity = 100;
     gameActive = true;
@@ -47,22 +51,10 @@ function initializeGame() {
     
     document.getElementById('score').textContent = 0;
     document.getElementById('popularity').textContent = 100;
-    document.getElementById('restart-btn').style.display = 'none';
-    document.getElementById('game-notification').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'none';
     
     game = new Phaser.Game(config);
 }
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('start-btn').addEventListener('click', () => {
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('game-container').style.display = 'block';
-        initializeGame();
-    });
-
-    document.getElementById('restart-btn').addEventListener('click', initializeGame);
-});
 
 function preload() {
     this.load.image('milei', 'img/milei.png');
@@ -78,33 +70,30 @@ function preload() {
 function create() {
     this.sound.play('sirena');
     
-    // Jugador
     player = this.physics.add.sprite(400, 300, 'milei')
-        .setScale(0.15)
-        .setCollideWorldBounds(true);
-    
-    // Objetos del juego
+        .setScale(0.2)
+        .setCollideWorldBounds(true)
+        .setDepth(2);
+
     documents = this.physics.add.group();
     tweets = this.physics.add.group();
     traps = this.physics.add.group();
     fbiAgents = this.physics.add.group();
 
-    createCollectibles.call(this, documents, 'documento', 15);
-    createCollectibles.call(this, tweets, 'tweet', 10);
-    createCollectibles.call(this, traps, 'trampa', 8);
+    createCollectibles.call(this, documents, 'documento', 10);
+    createCollectibles.call(this, tweets, 'tweet', 5);
+    createCollectibles.call(this, traps, 'trampa', 5);
     createPatrollingFBI.call(this);
 
-    // Colisiones
     this.physics.add.overlap(player, documents, collectDocument, null, this);
     this.physics.add.overlap(player, tweets, collectTweet, null, this);
     this.physics.add.overlap(player, traps, triggerTrap, null, this);
-    this.physics.add.collider(player, fbiAgents, endGameLose, null, this);
+    this.physics.add.collider(player, fbiAgents, () => endGameLose.call(this));
 
-    // Temporizadores
     this.time.addEvent({
         delay: 1000,
         callback: () => {
-            popularity = Phaser.Math.Clamp(popularity - 2, 0, 100);
+            popularity = Phaser.Math.Clamp(popularity - 3, 0, 100);
             updateHUD();
             if(popularity <= 0) endGameLose.call(this);
         },
@@ -112,16 +101,15 @@ function create() {
     });
 
     fbiSpawnTimer = this.time.addEvent({
-        delay: 30000,
+        delay: 25000,
         callback: () => {
             currentFbiCount++;
             createPatrollingFBI.call(this);
-            showNotification(`¡Refuerzos FBI! (${currentFbiCount})`, '#ff0000');
+            showNotification(`¡REFUERZOS FBI! (${currentFbiCount})`, '#ff0000');
         },
         loop: true
     });
 
-    // Controles
     cursors = this.input.keyboard.createCursorKeys();
     setupTouchControls();
 }
@@ -129,7 +117,7 @@ function create() {
 function update() {
     if(!gameActive) return;
     
-    const speed = 200;
+    const speed = 250;
     player.setVelocity(0);
     
     if(cursors.left.isDown || leftPressed) player.setVelocityX(-speed);
@@ -137,48 +125,34 @@ function update() {
     if(cursors.up.isDown || upPressed) player.setVelocityY(-speed);
     if(cursors.down.isDown || downPressed) player.setVelocityY(speed);
     
-    // Comportamiento FBI
     fbiAgents.getChildren().forEach(agent => {
-        if(Phaser.Math.Between(0, 1)) {
-            this.physics.moveToObject(agent, player, fbiSpeed);
-        } else {
-            agent.setVelocity(
-                Phaser.Math.Between(-100, 100),
-                Phaser.Math.Between(-100, 100)
-            );
-        }
+        this.physics.moveToObject(agent, player, fbiSpeed);
     });
 }
 
-// Funciones auxiliares
 function createCollectibles(group, texture, count) {
     for(let i = 0; i < count; i++) {
         group.create(
-            Phaser.Math.Between(50, 750),
-            Phaser.Math.Between(50, 550),
+            Phaser.Math.Between(100, 700),
+            Phaser.Math.Between(100, 500),
             texture
-        ).setScale(0.1).setData('active', true);
+        )
+        .setScale(0.15)
+        .setData('active', true)
+        .setDepth(1);
     }
 }
 
 function createPatrollingFBI() {
     for(let i = 0; i < currentFbiCount; i++) {
         const agent = this.physics.add.sprite(
-            Phaser.Math.Between(50, 750),
-            Phaser.Math.Between(50, 550),
+            Phaser.Math.Between(100, 700),
+            Phaser.Math.Between(100, 500),
             'fbi'
-        ).setScale(0.15).setCollideWorldBounds(true);
-        
-        this.time.addEvent({
-            delay: 2000,
-            callback: () => {
-                if(gameActive) agent.setVelocity(
-                    Phaser.Math.Between(-100, 100),
-                    Phaser.Math.Between(-100, 100)
-                );
-            },
-            loop: true
-        });
+        )
+        .setScale(0.2)
+        .setCollideWorldBounds(true)
+        .setDepth(1);
         
         fbiAgents.add(agent);
     }
@@ -198,36 +172,51 @@ function collectTweet(player, tweet) {
     if(!tweet.getData('active')) return;
     
     tweet.disableBody(true, true);
-    const effect = Phaser.Math.Between(-20, 30);
+    const effect = Phaser.Math.Between(-25, 35);
     popularity = Phaser.Math.Clamp(popularity + effect, 0, 100);
-    showNotification(`Apoyo ${effect >= 0 ? '+' : ''}${effect}%`, effect >= 0 ? '#00ff00' : '#ff0000');
-    updateHUD();
+    
+    let message = effect >= 0 
+        ? '¡Ratas inmundas de la casta política! +' + effect + '%'
+        : 'No estaba interiorizado... ' + effect + '%';
+        
+    showNotification(message, effect >= 0 ? '#00ff00' : '#ff0000');
     this.sound.play(effect >= 0 ? 'positive' : 'negative');
+    updateHUD();
 }
 
 function triggerTrap() {
-    fbiSpeed += 50;
-    popularity = Phaser.Math.Clamp(popularity - 30, 0, 100);
-    showNotification('¡Trampa activada!', '#ff0000');
+    fbiSpeed += 60;
+    popularity = Phaser.Math.Clamp(popularity - 35, 0, 100);
+    showNotification('¡TRAMPA ACTIVADA! FBI +VELOC', '#ff0000');
     updateHUD();
-    this.cameras.main.shake(300, 0.02);
+    this.cameras.main.shake(500, 0.03);
     player.setTint(0xff0000);
     this.time.delayedCall(500, () => player.clearTint());
 }
 
 function endGameWin() {
     gameActive = false;
-    showNotification('¡Victoria! Evidencia destruida', '#00ff00', true);
-    document.getElementById('restart-btn').style.display = 'block';
-    player.disableBody(true, true);
+    showEndScreen(
+        '¡FRAUDE ÉPICO!',
+        `Milei escapó a Paraguay con $15 millones en Dogecoin.\n\nEn su canal de YouTube, declaró: "Fue un experimento social libertario".\n\nLos inversores quedaron en bancarrota mientras él compra verificado en Twitter.`
+    );
 }
 
 function endGameLose() {
     gameActive = false;
-    showNotification('¡Derrota! Capturado por el FBI', '#ff0000', true);
-    document.getElementById('restart-btn').style.display = 'block';
+    showEndScreen(
+        '¡CAÍDA DEL MESÍAS!',
+        `Extraditado a EE.UU. tras juicio relámpago.\n\nCondena: 30 años en Guantánamo por estafa interestatal.\n\nSus seguidores ahora minan Bitcoin para pagar su fianza fallida.`
+    );
     this.sound.play('sirena');
-    player.disableBody(true, true);
+}
+
+function showEndScreen(title, description) {
+    document.getElementById('game-container').style.display = 'none';
+    const endScreen = document.getElementById('end-screen');
+    endScreen.style.display = 'block';
+    document.getElementById('end-title').textContent = title;
+    document.getElementById('end-description').textContent = description;
 }
 
 function updateHUD() {
@@ -236,15 +225,12 @@ function updateHUD() {
     document.getElementById('popularity').classList.toggle('low-popularity', popularity <= 20);
 }
 
-function showNotification(text, color, persistent = false) {
+function showNotification(text, color) {
     const notification = document.getElementById('game-notification');
     notification.textContent = text;
     notification.style.color = color;
     notification.style.display = 'block';
-    
-    if(!persistent) {
-        setTimeout(() => notification.style.display = 'none', 2000);
-    }
+    setTimeout(() => notification.style.display = 'none', 2500);
 }
 
 function setupTouchControls() {
