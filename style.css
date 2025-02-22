@@ -91,7 +91,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     position: fixed;
-    bottom: 20px;
+    bottom: 0px;
     left: 50%;
     transform: translateX(-50%);
     gap: 25px;
